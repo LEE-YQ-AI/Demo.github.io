@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FAQ 管理 · 蓝鲸 ERP</title>
+  <link rel="stylesheet" href="./shared.css" />
+  <!--
+    PRD v4 · Page type: list + tabs + drawer
+    Components: Breadcrumb, Tabs, Search, Table, Pagination, DataCard, Dialog, Drawer, MessageConfirm, Tag
+    Shell: sidebar 240 + topbar 60 + light-nav · 单面板(Tab+筛选+表格) · inline Label
+    Single menu: 配置 / FAQ管理 · Three tabs in one page
+  -->
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="侧栏导航">
+      <div class="sidebar-logo">
+        <div class="mark">KB</div>
+        <div class="name">蓝鲸 ERP</div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-l1">▣ 配置<span class="arrow">›</span></div>
+          <div class="nav-l2 active">FAQ 管理</div>
+        </div>
+      </nav>
+    </aside>
+
+    <div class="main-wrap">
+      <header class="topbar">
+        <nav class="breadcrumb" aria-label="面包屑">
+          <a href="#">配置</a><span class="sep">/</span>
+          <span class="current">FAQ 管理</span>
+        </nav>
+        <div class="topbar-right">
+          <span>维护者 Demo</span>
+          <div class="avatar">维</div>
+        </div>
+      </header>
+
+      <main class="content">
+        <div class="panel-card">
+          <div class="page-tabs" role="tablist">
+            <button type="button" class="page-tab active" data-tab="faq" role="tab">FAQ 管理</button>
+            <button type="button" class="page-tab" data-tab="category" role="tab">分类管理</button>
+            <button type="button" class="page-tab" data-tab="stats" role="tab">FAQ 统计</button>
+          </div>
+
+          <!-- ========== Tab1 FAQ ========== -->
+          <section id="panel-faq" class="tab-panel active" role="tabpanel">
+            <div class="panel-filter">
+              <div class="filter-row">
+                <div class="filter-item is-search">
+                  <span class="label">搜索</span>
+                  <input class="control" id="faqKw" type="search" placeholder="语义检索标题/内容" />
+                </div>
+                <div class="filter-item">
+                  <span class="label">分类</span>
+                  <select class="control" id="faqCat">
+                    <option value="">全部</option>
+                    <option>App 问题</option>
+                    <option>设备问题</option>
+                    <option>第三方问题</option>
+                    <option>其他</option>
+                  </select>
+                </div>
+                <div class="filter-item">
+                  <span class="label">状态</span>
+                  <select class="control" id="faqStatus">
+                    <option value="">全部</option>
+                    <option value="published">已发布</option>
+                    <option value="draft">草稿</option>
+                    <option value="offline">已下架</option>
+                  </select>
+                </div>
+                <div class="filter-actions">
+                  <button type="button" class="btn btn-primary" id="faqQuery">查询</button>
+                  <button type="button" class="btn" id="faqReset">重置</button>
+                </div>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="toolbar">
+                <div class="toolbar-left">
+                  <button type="button" class="btn btn-primary" id="btnNewFaq">新建 FAQ</button>
+                </div>
+                <div class="toolbar-right">
+                  <button type="button" class="btn" id="btnImportFaq">导入</button>
+                  <button type="button" class="btn" id="btnExportFaq">导出</button>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table class="data-table faq-table">
+                  <thead>
+                    <tr>
+                      <th class="col-title">标题</th>
+                      <th class="col-cat">分类</th>
+                      <th class="col-status">状态</th>
+                      <th class="col-num">查看</th>
+                      <th class="col-num">有帮助</th>
+                      <th class="col-num">无帮助</th>
+                      <th class="col-time">创建时间</th>
+                      <th class="col-time">更新时间</th>
+                      <th class="col-actions">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="faqTbody"></tbody>
+                </table>
+              </div>
+              <div class="pagination">
+                <div>共 <strong id="faqTotal">0</strong> 条</div>
+                <div class="page-btns">
+                  <button type="button" disabled>‹</button>
+                  <button type="button" class="active">1</button>
+                  <button type="button" disabled>›</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ========== Tab2 Category ========== -->
+          <section id="panel-category" class="tab-panel" role="tabpanel">
+            <div class="panel-body">
+              <div class="toolbar">
+                <div class="toolbar-left">
+                  <button type="button" class="btn btn-primary" id="btnNewCat">新建分类</button>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table class="data-table cat-table">
+                  <thead>
+                    <tr>
+                      <th class="col-sort">排序</th>
+                      <th class="col-name">分类名称</th>
+                      <th class="col-refs">关联文章</th>
+                      <th class="col-time">创建时间</th>
+                      <th class="col-actions">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="catTbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- ========== Tab3 Stats（含搜索无果） ========== -->
+          <section id="panel-stats" class="tab-panel" role="tabpanel">
+            <div class="kpi-row" id="kpiRow">
+              <div class="kpi-card">
+                <div class="label">已发布 FAQ 数</div>
+                <div class="value" id="kpiPub">0</div>
+              </div>
+              <div class="kpi-card">
+                <div class="label">总查看次数</div>
+                <div class="value" id="kpiView">0</div>
+              </div>
+              <div class="kpi-card">
+                <div class="label">有帮助次数</div>
+                <div class="value" id="kpiHelp">0</div>
+              </div>
+              <div class="kpi-card">
+                <div class="label">有帮助率</div>
+                <div class="value" id="kpiRate">—</div>
+                <div class="sub">有帮助 / (有帮助+无帮助)</div>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="section-title">热门问题（Top10）</div>
+              <div class="filter-row" style="margin-bottom:12px">
+                <div class="filter-item">
+                  <span class="label">时间范围</span>
+                  <input class="control" id="hotFrom" type="date" />
+                </div>
+                <div class="filter-item">
+                  <span class="label">至</span>
+                  <input class="control" id="hotTo" type="date" />
+                </div>
+                <div class="filter-actions">
+                  <button type="button" class="btn btn-primary" id="hotQuery">查询</button>
+                  <button type="button" class="btn" id="hotReset">重置</button>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table class="data-table stats-table">
+                  <thead>
+                    <tr>
+                      <th class="col-rank">排名</th>
+                      <th class="col-title">标题</th>
+                      <th class="col-cat">分类</th>
+                      <th class="col-num">查看</th>
+                      <th class="col-num">有帮助</th>
+                      <th class="col-num">无帮助</th>
+                      <th class="col-num">有帮助率</th>
+                      <th class="col-time">更新时间</th>
+                      <th class="col-actions">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="statsTbody"></tbody>
+                </table>
+              </div>
+
+              <div class="section-title" style="margin-top:24px">
+                搜索内容<span class="section-title-note">（仅保留近 365 天数据，超期自动清理）</span>
+              </div>
+              <div class="filter-row" style="margin-bottom:12px">
+                <div class="filter-item is-search">
+                  <span class="label">搜索</span>
+                  <input class="control" id="missKw" placeholder="语义检索搜索内容" />
+                </div>
+                <div class="filter-item">
+                  <span class="label">时间范围</span>
+                  <input class="control" id="missFrom" type="date" />
+                </div>
+                <div class="filter-item">
+                  <span class="label">至</span>
+                  <input class="control" id="missTo" type="date" />
+                </div>
+                <div class="filter-actions">
+                  <button type="button" class="btn btn-primary" id="missQuery">查询</button>
+                  <button type="button" class="btn" id="missReset">重置</button>
+                </div>
+                <div class="filter-actions filter-actions-end">
+                  <button type="button" class="btn" id="missExport">导出</button>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table class="data-table miss-table">
+                  <thead>
+                    <tr>
+                      <th class="col-rank">序号</th>
+                      <th class="col-title">搜索内容</th>
+                      <th class="col-time">搜索时间</th>
+                      <th class="col-actions">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="missTbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- FAQ Drawer: edit / preview -->
+  <div class="drawer-mask" id="drawerMask"></div>
+  <aside class="drawer" id="faqDrawer" aria-label="FAQ 编辑抽屉">
+    <div class="drawer-header">
+      <span id="drawerTitle">新建 FAQ</span>
+      <button type="button" class="btn-icon" id="drawerClose" aria-label="关闭">✕</button>
+    </div>
+    <div class="drawer-body">
+      <div id="editView">
+        <div class="form-item">
+          <label><span class="req">*</span>分类</label>
+          <select class="select" id="editCat">
+            <option value="">请选择</option>
+            <option value="app">App 问题</option>
+            <option value="device">设备问题</option>
+            <option value="third_party">第三方问题</option>
+            <option value="other">其他</option>
+          </select>
+          <div class="error-text">发布时分类必选</div>
+        </div>
+        <div class="form-item">
+          <label>状态</label>
+          <input class="input" id="editStatus" value="草稿" disabled />
+        </div>
+        <div class="lang-tabs">
+          <button type="button" class="lang-tab active" data-lang="en">English</button>
+          <button type="button" class="lang-tab" data-lang="zh">简体中文</button>
+        </div>
+        <div class="form-item" id="editTitleItem">
+          <label><span class="req">*</span>标题</label>
+          <input class="input" id="editTitle" maxlength="100" placeholder="不超过 100 字符" />
+          <div class="error-text">标题不能为空</div>
+        </div>
+        <div class="form-item" id="contentTypeItem">
+          <label><span class="req">*</span>内容类型</label>
+          <div class="content-type-radios" role="radiogroup" aria-label="内容类型">
+            <label class="radio-label">
+              <input type="radio" name="contentType" value="body" checked />
+              <span>正文</span>
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="contentType" value="link" />
+              <span>外链</span>
+            </label>
+          </div>
+        </div>
+        <div class="form-item" id="editBodyItem">
+          <label><span class="req">*</span>正文</label>
+          <div class="rte" id="editBodyWrap">
+            <div class="rte-toolbar" role="toolbar" aria-label="正文格式">
+              <select class="rte-font" id="rteFont" title="字号" aria-label="字号">
+                <option value="14px">14</option>
+                <option value="16px" selected>16</option>
+                <option value="18px">18</option>
+                <option value="24px">24</option>
+              </select>
+              <button type="button" class="rte-btn" data-cmd="bold" title="加粗"><b>B</b></button>
+              <button type="button" class="rte-btn" data-cmd="italic" title="斜体"><i>I</i></button>
+              <button type="button" class="rte-btn" data-cmd="underline" title="下划线"><u>U</u></button>
+              <span class="rte-sep"></span>
+              <button type="button" class="rte-btn" data-cmd="justifyLeft" title="左对齐">左</button>
+              <button type="button" class="rte-btn" data-cmd="justifyCenter" title="居中">中</button>
+              <button type="button" class="rte-btn" data-cmd="justifyRight" title="右对齐">右</button>
+              <span class="rte-sep"></span>
+              <button type="button" class="rte-btn" data-cmd="insertUnorderedList" title="无序列表">• 列表</button>
+              <button type="button" class="rte-btn" id="rteImage" title="上传图片">图片</button>
+              <input type="file" id="rteImageFile" accept="image/*" hidden />
+            </div>
+            <div class="rte-editor textarea" id="editBody" contenteditable="true" data-placeholder="请输入正文"></div>
+          </div>
+          <div class="error-text">请填写正文</div>
+        </div>
+        <div class="form-item hidden" id="editLinkItem">
+          <label><span class="req">*</span>外链</label>
+          <input class="input" id="editVideo" type="url" placeholder="https://" />
+          <div class="error-text">请填写以 http 或 https 开头的外链</div>
+        </div>
+      </div>
+      <div id="previewView" class="hidden">
+        <div class="phone-preview">
+          <p class="phone-preview-tip">与 App FAQ 详情一致 · 不对 App 生效</p>
+          <div class="phone-frame" aria-label="手机预览">
+            <div class="phone-notch"></div>
+            <div class="phone-status">
+              <span>9:41</span>
+              <span>FAQ</span>
+              <span>●●</span>
+            </div>
+            <div class="phone-nav">
+              <span class="phone-back">‹</span>
+              <span class="phone-nav-title" id="previewNavTitle">—</span>
+              <span></span>
+            </div>
+            <div class="phone-screen">
+              <div class="phone-article">
+                <h1 class="phone-title" id="previewTitle">—</h1>
+                <div class="phone-body" id="previewBody"></div>
+              </div>
+              <div class="phone-feedback">
+                <div class="phone-feedback-q">这篇文章有帮助吗？</div>
+                <div class="phone-feedback-actions">
+                  <button type="button" class="phone-fb-btn" disabled>有帮助</button>
+                  <button type="button" class="phone-fb-btn" disabled>无帮助</button>
+                </div>
+              </div>
+            </div>
+            <div class="phone-home"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="drawer-footer" id="editFooter">
+      <button type="button" class="btn" id="btnPreview">预览</button>
+      <button type="button" class="btn" id="btnSaveDraft">保存</button>
+      <button type="button" class="btn" id="btnCopyH5" disabled title="发布后可生成">复制 H5</button>
+      <button type="button" class="btn btn-primary" id="btnPublish">发布</button>
+    </div>
+    <div class="drawer-footer hidden" id="previewFooter">
+      <button type="button" class="btn btn-primary" id="btnBackEdit">返回编辑</button>
+    </div>
+  </aside>
+
+  <!-- Category dialog -->
+  <div class="mask" id="catMask" role="dialog" aria-modal="true">
+    <div class="dialog" style="width:520px">
+      <div class="dialog-header">
+        <span id="catFormTitle">新建分类</span>
+        <button type="button" class="btn-icon" data-close="catMask" aria-label="关闭">✕</button>
+      </div>
+      <div class="dialog-body" style="padding-top:16px">
+        <div class="form-item">
+          <label><span class="req">*</span>排序</label>
+          <input class="input" id="fSort" type="number" value="10" />
+        </div>
+        <div class="form-item">
+          <label><span class="req">*</span>English</label>
+          <input class="input" id="fEn" placeholder="必填，用于回退" />
+        </div>
+        <div class="form-item">
+          <label>简体中文</label>
+          <input class="input" id="fZh" />
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" class="btn" data-close="catMask">取消</button>
+        <button type="button" class="btn btn-primary" id="catSave">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ Import dialog -->
+  <div class="mask" id="importMask" role="dialog" aria-modal="true">
+    <div class="dialog" style="width:560px">
+      <div class="dialog-header">
+        <span>导入 FAQ</span>
+        <button type="button" class="btn-icon" data-close="importMask" aria-label="关闭">✕</button>
+      </div>
+      <div class="dialog-body" style="padding-top:16px">
+        <div class="form-item">
+          <label>导入模板</label>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <button type="button" class="btn" id="btnDownloadTpl">下载导入模板</button>
+          </div>
+        </div>
+        <div class="form-item">
+          <label><span class="req">*</span>上传文件</label>
+          <input class="input" id="importFile" type="file" accept=".xlsx,.xls" />
+        </div>
+        <div class="import-tips">
+          <div class="import-tips-title">填写说明</div>
+          <ul>
+            <li>问题分类（必填）、title_en（必填）、body_en（必填）</li>
+            <li>问题分类须为「分类管理」中已有分类；其他语种非必填</li>
+            <li>一行一条 FAQ；导入成功后即为发布状态</li>
+          </ul>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" class="btn" data-close="importMask">取消</button>
+        <button type="button" class="btn btn-primary" id="btnImportConfirm">开始导入</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ Import result -->
+  <div class="mask" id="importResultMask" role="dialog" aria-modal="true">
+    <div class="dialog" style="width:640px">
+      <div class="dialog-header">
+        <span>导入结果</span>
+        <button type="button" class="btn-icon" data-close="importResultMask" aria-label="关闭">✕</button>
+      </div>
+      <div class="dialog-body" style="padding-top:16px">
+        <div class="import-result-summary" id="importResultSummary"></div>
+        <div class="import-fail-block" id="importFailBlock" style="display:none">
+          <div class="import-fail-title">失败明细</div>
+          <div class="table-wrap import-fail-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width:72px">行号</th>
+                  <th>title_en</th>
+                  <th style="width:200px">失败原因</th>
+                </tr>
+              </thead>
+              <tbody id="importFailTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" class="btn btn-primary" data-close="importResultMask">知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Copy H5：选择语种 -->
+  <div class="mask" id="h5LangMask" role="dialog" aria-modal="true">
+    <div class="dialog" style="width:420px">
+      <div class="dialog-header">
+        <span>复制 H5</span>
+        <button type="button" class="btn-icon" data-close="h5LangMask" aria-label="关闭">✕</button>
+      </div>
+      <div class="dialog-body" style="padding-top:16px">
+        <div class="form-item" id="h5LangItem">
+          <label><span class="req">*</span>语种</label>
+          <select class="select" id="h5LangSelect">
+            <option value="">请选择语种</option>
+          </select>
+        </div>
+        <div class="form-hint" style="margin-top:-4px;color:var(--text-tertiary);font-size:12px;line-height:1.5">
+          链接将按所选语种打开；若该语种无内容，H5 回退 English。
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" class="btn" data-close="h5LangMask">取消</button>
+        <button type="button" class="btn btn-primary" id="btnH5LangCopy">复制链接</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete confirm -->
+  <div class="mask" id="delMask" role="dialog" aria-modal="true">
+    <div class="dialog">
+      <div class="dialog-header">
+        <span id="delTitle">确认删除</span>
+        <button type="button" class="btn-icon" data-close="delMask" aria-label="关闭">✕</button>
+      </div>
+      <div class="dialog-body" id="delBody">确定删除该知识？删除后 App 与 H5 将无法访问。</div>
+      <div class="dialog-footer">
+        <button type="button" class="btn" data-close="delMask">取消</button>
+        <button type="button" class="btn btn-primary" id="delOk" style="background:var(--error);border-color:var(--error)">删除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alert dialog (preset cannot delete / refs) -->
+  <div class="mask" id="alertMask" role="dialog" aria-modal="true">
+    <div class="dialog">
+      <div class="dialog-header">
+        <span>提示</span>
+        <button type="button" class="btn-icon" data-close="alertMask" aria-label="关闭">✕</button>
+      </div>
+      <div class="dialog-body" id="alertBody"></div>
+      <div class="dialog-footer">
+        <button type="button" class="btn btn-primary" data-close="alertMask">知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    /* —— Mock data · sorted view↓ created↑ —— */
+    let faqs = [
+      { id: "a1", title: "如何重置密码", cat: "其他", catCode: "other", status: "published", langs: "en · zh", views: 1280, help: 96, nohelp: 12, created: "2026-06-01 10:00", updated: "2026-07-20 09:00", tags: ["密码", "重置", "账号", "登录", "安全"], body: "打开「设置 → 账号 → 重置密码」按指引完成操作。" },
+      { id: "a2", title: "设备离线排查", cat: "设备问题", catCode: "device", status: "published", langs: "en · zh", views: 980, help: 70, nohelp: 18, created: "2026-06-05 11:00", updated: "2026-07-18 14:00", tags: ["离线", "网络", "wifi", "连接", "路由器"], body: "检查供电、2.4GHz Wi‑Fi，然后重启设备与路由器。" },
+      { id: "a3", title: "App 启动闪退", cat: "App 问题", catCode: "app", status: "published", langs: "en", views: 860, help: 40, nohelp: 9, created: "2026-05-20 08:00", updated: "2026-07-15 16:00", tags: ["闪退", "崩溃", "启动", "缓存", "更新"], body: "请更新 App，清理缓存后重试。" },
+      { id: "a6", title: "如何更换 Wi‑Fi 网络", cat: "设备问题", catCode: "device", status: "published", langs: "en · zh", views: 720, help: 58, nohelp: 11, created: "2026-06-08 09:00", updated: "2026-07-16 11:00", tags: ["wifi", "网络", "配网", "换网", "连接"], body: "进入设备设置 → 网络 → 重新配网。" },
+      { id: "a7", title: "忘记账号邮箱怎么办", cat: "App 问题", catCode: "app", status: "published", langs: "en · zh", views: 650, help: 44, nohelp: 15, created: "2026-06-12 14:00", updated: "2026-07-14 10:00", tags: ["邮箱", "账号", "找回", "登录", "密码"], body: "可通过绑定手机号找回，或联系客服协助。" },
+      { id: "a8", title: "Google Home 关联指南", cat: "第三方问题", catCode: "third_party", status: "published", langs: "en · zh", views: 540, help: 62, nohelp: 8, created: "2026-06-15 16:00", updated: "2026-07-19 13:00", tags: ["google", "home", "关联", "三方", "语音"], body: "在 Google Home 中关联 Govee 账号即可。" },
+      { id: "a9", title: "固件升级失败", cat: "设备问题", catCode: "device", status: "published", langs: "en · zh", views: 480, help: 35, nohelp: 20, created: "2026-06-18 10:00", updated: "2026-07-17 09:00", tags: ["固件", "升级", "ota", "更新", "失败"], body: "保持设备通电在线，稍后重试 OTA 升级。" },
+      { id: "a10", title: "收不到消息通知", cat: "App 问题", catCode: "app", status: "published", langs: "en · zh", views: 410, help: 28, nohelp: 14, created: "2026-06-22 11:00", updated: "2026-07-12 15:00", tags: ["通知", "消息", "推送", "权限"], body: "请开启系统通知权限，并检查 App 内通知开关。" },
+      { id: "a11", title: "如何共享设备", cat: "其他", catCode: "other", status: "published", langs: "en · zh", views: 360, help: 50, nohelp: 6, created: "2026-06-25 13:00", updated: "2026-07-11 08:00", tags: ["共享", "分享", "成员", "邀请"], body: "设置 → 共享 → 邀请成员。" },
+      { id: "a12", title: "定时/日程不生效", cat: "设备问题", catCode: "device", status: "published", langs: "en · zh", views: 290, help: 22, nohelp: 10, created: "2026-07-02 09:00", updated: "2026-07-21 16:00", tags: ["定时", "日程", "时区", "在线"], body: "检查时区设置，并确认设备在线。" },
+      { id: "a4", title: "Alexa 关联指南", cat: "第三方问题", catCode: "third_party", status: "offline", langs: "en · zh", views: 420, help: 55, nohelp: 7, created: "2026-07-01 12:00", updated: "2026-07-22 10:00", tags: ["alexa", "关联", "三方", "语音", "技能"], body: "启用技能并完成账号关联。" },
+      { id: "a5", title: "夏季促销 FAQ（草稿）", cat: "其他", catCode: "other", status: "draft", langs: "zh", views: 0, help: 0, nohelp: 0, created: "2026-07-24 15:00", updated: "2026-07-24 15:00", tags: ["促销", "活动", "草稿"], body: "活动规则草稿…" }
+    ];
+
+    let categories = [
+      { id: "c1", sort: 1, nameZh: "App 问题", nameEn: "App Issues", preset: true, refs: 3, created: "2026-07-10 10:00" },
+      { id: "c2", sort: 2, nameZh: "设备问题", nameEn: "Device Issues", preset: true, refs: 4, created: "2026-07-10 10:00" },
+      { id: "c3", sort: 3, nameZh: "第三方问题", nameEn: "Third-party", preset: true, refs: 2, created: "2026-07-10 10:00" },
+      { id: "c4", sort: 4, nameZh: "其他", nameEn: "Other", preset: true, refs: 3, created: "2026-07-10 10:00" }
+    ];
+
+    let misses = [
+      { q: "Matter 中枢怎么设置", searchedAt: "2026-07-26 21:14", tags: ["matter", "中枢", "设置", "三方"] },
+      { q: "蓝牙绑不上", searchedAt: "2026-07-26 18:02", tags: ["蓝牙", "绑定", "连接", "设备"] },
+      { q: "Google Home 自动化", searchedAt: "2026-07-25 16:40", tags: ["google", "home", "自动化", "三方"] },
+      { q: "保修申请", searchedAt: "2026-07-24 11:08", tags: ["保修", "售后", "申请"] },
+      { q: "设备一直重连", searchedAt: "2026-07-23 09:33", tags: ["重连", "离线", "网络", "wifi", "连接"] },
+      { q: "蓝牙绑不上", searchedAt: "2026-07-22 20:15", tags: ["蓝牙", "绑定", "连接", "设备"] },
+      { q: "Matter 中枢怎么设置", searchedAt: "2026-07-21 14:50", tags: ["matter", "中枢", "设置", "三方"] },
+      { q: "旧版固件刷机", searchedAt: "2025-06-15 12:00", tags: ["固件", "刷机"] }
+    ];
+
+    const synonymGroups = [
+      ["密码", "重置", "账号", "邮箱", "登录", "找回", "安全"],
+      ["离线", "网络", "wifi", "wi-fi", "wi‑fi", "配网", "换网", "连接", "重连", "路由器", "蓝牙", "绑定"],
+      ["闪退", "崩溃", "卡死", "启动", "缓存", "卸载"],
+      ["通知", "消息", "推送", "权限"],
+      ["固件", "升级", "ota", "更新"],
+      ["google", "home", "alexa", "matter", "中枢", "三方", "关联", "语音", "技能", "自动化"],
+      ["共享", "分享", "成员", "邀请"],
+      ["定时", "日程", "时区", "计划"],
+      ["保修", "售后", "申请", "促销", "活动"]
+    ];
+
+    function sortFaqs(list) {
+      return [...list].sort((a, b) => {
+        if (b.views !== a.views) return b.views - a.views;
+        return a.created.localeCompare(b.created);
+      });
+    }
+
+    function expandQueryTerms(kw) {
+      const raw = kw.toLowerCase().trim();
+      const terms = new Set([raw]);
+      raw.split(/[\s,，、]+/).filter(Boolean).forEach(t => terms.add(t));
+      synonymGroups.forEach(group => {
+        if (group.some(t => raw.includes(t) || t.includes(raw))) {
+          group.forEach(t => terms.add(t));
+        }
+      });
+      return [...terms];
+    }
+
+    function scoreByTerms(textParts, tags, terms) {
+      const title = String(textParts.title || "").toLowerCase();
+      const body = String(textParts.body || "").replace(/<[^>]+>/g, " ").toLowerCase();
+      const tagList = (tags || []).map(t => String(t).toLowerCase());
+      let score = 0;
+      terms.forEach(t => {
+        if (!t) return;
+        if (title.includes(t)) score += 12;
+        if (tagList.some(tag => tag.includes(t) || t.includes(tag))) score += 8;
+        if (body.includes(t)) score += 3;
+      });
+      return score;
+    }
+
+    function semanticFilterFaqs(source, kw) {
+      if (!kw) return [...source];
+      const terms = expandQueryTerms(kw);
+      const scored = source.map(f => ({
+        item: f,
+        score: scoreByTerms({ title: f.title, body: f.body }, f.tags, terms)
+      }));
+      const direct = scored.filter(x => x.score > 0);
+      if (!direct.length) return [];
+      const hitIds = new Set(direct.map(x => x.item.id));
+      const relatedTags = new Set();
+      const relatedCats = new Set();
+      direct.forEach(({ item }) => {
+        relatedCats.add(item.catCode || item.cat);
+        (item.tags || []).forEach(t => relatedTags.add(String(t).toLowerCase()));
+      });
+      scored.forEach(row => {
+        if (hitIds.has(row.item.id)) return;
+        const tags = (row.item.tags || []).map(t => String(t).toLowerCase());
+        if (tags.some(t => relatedTags.has(t))) {
+          row.score = Math.max(row.score, 4);
+          hitIds.add(row.item.id);
+        } else if (relatedCats.has(row.item.catCode || row.item.cat)) {
+          row.score = Math.max(row.score, 1.5);
+          hitIds.add(row.item.id);
+        }
+      });
+      return scored
+        .filter(x => x.score > 0)
+        .sort((a, b) => {
+          if (b.score !== a.score) return b.score - a.score;
+          if (b.item.views !== a.item.views) return b.item.views - a.item.views;
+          return a.item.created.localeCompare(b.item.created);
+        })
+        .map(x => x.item);
+    }
+
+    function semanticFilterMisses(source, kw) {
+      if (!kw) return [...source];
+      const terms = expandQueryTerms(kw);
+      const scored = source.map((m, idx) => ({
+        item: m,
+        idx,
+        score: scoreByTerms({ title: m.q, body: "" }, m.tags, terms)
+      }));
+      const direct = scored.filter(x => x.score > 0);
+      if (!direct.length) return [];
+      const hitIdx = new Set(direct.map(x => x.idx));
+      const relatedTags = new Set();
+      direct.forEach(({ item }) => {
+        (item.tags || []).forEach(t => relatedTags.add(String(t).toLowerCase()));
+      });
+      scored.forEach(row => {
+        if (hitIdx.has(row.idx)) return;
+        const tags = (row.item.tags || []).map(t => String(t).toLowerCase());
+        if (tags.some(t => relatedTags.has(t))) {
+          row.score = Math.max(row.score, 4);
+          hitIdx.add(row.idx);
+        }
+      });
+      return scored
+        .filter(x => x.score > 0)
+        .sort((a, b) => {
+          if (b.score !== a.score) return b.score - a.score;
+          return b.item.searchedAt.localeCompare(a.item.searchedAt);
+        })
+        .map(x => x.item);
+    }
+
+    function toast(msg, type = "success") {
+      const el = document.getElementById("toast");
+      el.className = "toast show " + type;
+      el.textContent = msg;
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => el.classList.remove("show"), 2200);
+    }
+
+    function rate(h, n) {
+      const d = h + n;
+      return d ? Math.round((h / d) * 100) + "%" : "—";
+    }
+
+    /* Tabs */
+    document.querySelectorAll(".page-tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".page-tab").forEach(t => t.classList.remove("active"));
+        document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+        tab.classList.add("active");
+        document.getElementById("panel-" + tab.dataset.tab).classList.add("active");
+        if (tab.dataset.tab === "stats") { renderStats(); renderMiss(); }
+      });
+    });
+
+    function statusTag(status) {
+      if (status === "published") return `<span class="tag tag-published">已发布</span>`;
+      if (status === "offline") return `<span class="tag tag-offline">已下架</span>`;
+      return `<span class="tag tag-draft">草稿</span>`;
+    }
+    function statusLabel(status) {
+      if (status === "published") return "已发布";
+      if (status === "offline") return "已下架";
+      return "草稿";
+    }
+
+    /* FAQ table */
+    function renderFaqs(list = sortFaqs(faqs)) {
+      document.getElementById("faqTbody").innerHTML = list.map(r => {
+        const offlineBtn = r.status === "published"
+          ? `<button type="button" class="btn-link" data-act="offline" data-id="${r.id}">下架</button>`
+          : "";
+        return `
+        <tr>
+          <td class="col-title" title="${r.title}">${r.title}</td>
+          <td class="col-cat">${r.cat}</td>
+          <td class="col-status">${statusTag(r.status)}</td>
+          <td class="num col-num">${r.views}</td>
+          <td class="num col-num">${r.help}</td>
+          <td class="num col-num">${r.nohelp}</td>
+          <td class="num col-time">${r.created}</td>
+          <td class="num col-time">${r.updated}</td>
+          <td class="col-actions">
+            <button type="button" class="btn-link" data-act="edit" data-id="${r.id}">编辑</button>
+            <button type="button" class="btn-link" data-act="preview" data-id="${r.id}">预览</button>
+            <button type="button" class="btn-link" data-act="h5" data-id="${r.id}" ${r.status !== "published" ? "disabled" : ""}>复制H5</button>
+            ${offlineBtn}
+            <button type="button" class="btn-danger-text" data-act="del" data-id="${r.id}">删除</button>
+          </td>
+        </tr>`;
+      }).join("");
+      document.getElementById("faqTotal").textContent = list.length;
+    }
+    renderFaqs();
+
+    document.getElementById("faqQuery").onclick = () => {
+      const kw = document.getElementById("faqKw").value.trim();
+      const cat = document.getElementById("faqCat").value;
+      const st = document.getElementById("faqStatus").value;
+      let pool = faqs.filter(r => {
+        if (cat && r.cat !== cat) return false;
+        if (st && r.status !== st) return false;
+        return true;
+      });
+      const list = kw ? semanticFilterFaqs(pool, kw) : sortFaqs(pool);
+      renderFaqs(list);
+      toast("查询完成");
+    };
+    document.getElementById("faqReset").onclick = () => {
+      ["faqKw", "faqCat", "faqStatus"].forEach(id => document.getElementById(id).value = "");
+      renderFaqs();
+    };
+
+    /* Drawer */
+    let editingId = null;
+    let editStatus = "draft";
+
+    function getContentMode() {
+      const checked = document.querySelector('input[name="contentType"]:checked');
+      return checked ? checked.value : "body";
+    }
+
+    function setContentMode(mode) {
+      const value = mode === "link" ? "link" : "body";
+      document.querySelectorAll('input[name="contentType"]').forEach(el => {
+        el.checked = el.value === value;
+      });
+      syncContentModeUI();
+    }
+
+    function syncContentModeUI() {
+      const mode = getContentMode();
+      const bodyItem = document.getElementById("editBodyItem");
+      const linkItem = document.getElementById("editLinkItem");
+      bodyItem.classList.toggle("hidden", mode !== "body");
+      linkItem.classList.toggle("hidden", mode !== "link");
+      bodyItem.classList.remove("has-error");
+      linkItem.classList.remove("has-error");
+    }
+
+    function bodyTextContent() {
+      const el = document.getElementById("editBody");
+      return (el.textContent || "").replace(/\u00a0/g, " ").trim();
+    }
+
+    function isValidHttpUrl(url) {
+      try {
+        const u = new URL(url);
+        return u.protocol === "http:" || u.protocol === "https:";
+      } catch {
+        return false;
+      }
+    }
+
+    function openDrawer(mode, id) {
+      const drawer = document.getElementById("faqDrawer");
+      const mask = document.getElementById("drawerMask");
+      document.getElementById("editView").classList.remove("hidden");
+      document.getElementById("previewView").classList.add("hidden");
+      document.getElementById("editFooter").classList.remove("hidden");
+      document.getElementById("previewFooter").classList.add("hidden");
+
+      if (mode === "new") {
+        editingId = null;
+        editStatus = "draft";
+        document.getElementById("drawerTitle").textContent = "新建 FAQ";
+        document.getElementById("editCat").value = "";
+        document.getElementById("editTitle").value = "";
+        document.getElementById("editBody").innerHTML = "";
+        document.getElementById("editVideo").value = "";
+        setContentMode("body");
+        document.getElementById("editStatus").value = "草稿";
+        document.getElementById("btnCopyH5").disabled = true;
+        document.getElementById("btnPublish").textContent = "发布";
+      } else {
+        const r = faqs.find(x => x.id === id);
+        editingId = id;
+        editStatus = r.status;
+        document.getElementById("drawerTitle").textContent = "编辑 FAQ";
+        document.getElementById("editCat").value = r.catCode;
+        document.getElementById("editTitle").value = r.title;
+        const useLink = !!(r.linkUrl && String(r.linkUrl).trim());
+        document.getElementById("editBody").innerHTML = useLink ? "" : (r.body || "");
+        document.getElementById("editVideo").value = useLink ? r.linkUrl : "";
+        setContentMode(useLink ? "link" : "body");
+        document.getElementById("editStatus").value = statusLabel(r.status);
+        document.getElementById("btnCopyH5").disabled = r.status !== "published";
+        document.getElementById("btnPublish").textContent = r.status === "offline" ? "重新发布" : "发布";
+        if (mode === "preview") {
+          document.getElementById("drawerTitle").textContent = "预览 FAQ";
+          showPreview({ fromEdit: false });
+        }
+      }
+      mask.classList.add("open");
+      drawer.classList.add("open");
+    }
+
+    function closeDrawer() {
+      document.getElementById("faqDrawer").classList.remove("open");
+      document.getElementById("drawerMask").classList.remove("open");
+    }
+
+    function showPreview({ fromEdit = true } = {}) {
+      const title = document.getElementById("editTitle").value.trim() || "（无标题）";
+      document.getElementById("previewNavTitle").textContent = title;
+      document.getElementById("previewTitle").textContent = title;
+      if (getContentMode() === "link") {
+        const url = document.getElementById("editVideo").value.trim();
+        document.getElementById("previewBody").innerHTML = url
+          ? `<p><a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a></p>`
+          : "<p style='color:#8E8E93'>（无外链）</p>";
+      } else {
+        document.getElementById("previewBody").innerHTML = document.getElementById("editBody").innerHTML.trim() || "<p style='color:#8E8E93'>（无正文）</p>";
+      }
+      document.getElementById("editView").classList.add("hidden");
+      document.getElementById("previewView").classList.remove("hidden");
+      document.getElementById("editFooter").classList.add("hidden");
+      if (fromEdit) {
+        document.getElementById("previewFooter").classList.remove("hidden");
+      } else {
+        document.getElementById("previewFooter").classList.add("hidden");
+      }
+    }
+
+    document.querySelectorAll('input[name="contentType"]').forEach(el => {
+      el.addEventListener("change", () => {
+        const mode = getContentMode();
+        if (mode === "body") {
+          document.getElementById("editVideo").value = "";
+        } else {
+          document.getElementById("editBody").innerHTML = "";
+        }
+        syncContentModeUI();
+      });
+    });
+
+    /* Rich text toolbar */
+    document.querySelector(".rte-toolbar").addEventListener("click", (e) => {
+      const btn = e.target.closest(".rte-btn[data-cmd]");
+      if (!btn) return;
+      e.preventDefault();
+      document.getElementById("editBody").focus();
+      document.execCommand(btn.dataset.cmd, false, null);
+    });
+    document.getElementById("rteFont").addEventListener("change", (e) => {
+      document.getElementById("editBody").focus();
+      document.execCommand("fontSize", false, "3");
+      const fonts = document.getElementById("editBody").querySelectorAll("font[size='3']");
+      fonts.forEach(f => {
+        f.removeAttribute("size");
+        f.style.fontSize = e.target.value;
+      });
+    });
+    document.getElementById("rteImage").onclick = () => document.getElementById("rteImageFile").click();
+    document.getElementById("rteImageFile").addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      if (file.size > 10 * 1024 * 1024) {
+        toast("图片不能超过 10MB", "error");
+        e.target.value = "";
+        return;
+      }
+      const url = URL.createObjectURL(file);
+      document.getElementById("editBody").focus();
+      document.execCommand("insertHTML", false, `<img src="${url}" alt="${file.name}" />`);
+      toast("图片已插入");
+      e.target.value = "";
+    });
+
+    document.getElementById("btnNewFaq").onclick = () => openDrawer("new");
+
+    function downloadBlobFile(filename, blob) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function downloadTextFile(filename, content, mime = "text/csv;charset=utf-8") {
+      downloadBlobFile(filename, new Blob(["\uFEFF" + content], { type: mime }));
+    }
+
+    function xmlEscape(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function buildFaqImportTemplateXls() {
+      const catNames = categories.map(c => c.nameZh);
+      const catList = `"${catNames.join(",")}"`;
+      // 表头 +（必填）提示；解析时按列序映射 category / title_en / body_en / title_zh / body_zh
+      const headers = [
+        "问题分类（必填）",
+        "title_en（必填）",
+        "body_en（必填）",
+        "简体中文标题",
+        "简体中文正文"
+      ];
+      const headerCells = headers.map(h =>
+        `<Cell ss:StyleID="Header"><Data ss:Type="String">${xmlEscape(h)}</Data></Cell>`
+      ).join("");
+      const sample1 = ["App 问题", "How to clear cache", "Open Settings > Storage > Clear cache.", "如何清理缓存", "打开设置 > 存储 > 清理缓存。"];
+      const sample2 = ["设备问题", "Device offline tips", "Check Wi-Fi 2.4GHz and reboot the device.", "设备离线提示", "检查 2.4GHz Wi-Fi 并重启设备。"];
+      const sampleRows = [sample1, sample2].map((row, ri) =>
+        `<Row ss:Index="${ri + 2}">${row.map(v =>
+          `<Cell><Data ss:Type="String">${xmlEscape(v)}</Data></Cell>`
+        ).join("")}</Row>`
+      ).join("");
+
+      return `<?xml version="1.0"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:html="http://www.w3.org/TR/REC-html40">
+ <Styles>
+  <Style ss:ID="Header"><Font ss:Bold="1"/></Style>
+ </Styles>
+ <Worksheet ss:Name="FAQ导入">
+  <Table>
+   <Column ss:Width="120"/>
+   <Column ss:Width="160"/>
+   <Column ss:Width="220"/>
+   <Column ss:Width="140"/>
+   <Column ss:Width="220"/>
+   <Row ss:Index="1">${headerCells}</Row>
+   ${sampleRows}
+  </Table>
+  <DataValidation xmlns="urn:schemas-microsoft-com:office:excel">
+   <Range>R2C1:R1000C1</Range>
+   <Type>List</Type>
+   <Value>${xmlEscape(catList)}</Value>
+  </DataValidation>
+ </Worksheet>
+</Workbook>`;
+    }
+
+    function csvEscape(v) {
+      const s = String(v == null ? "" : v);
+      if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+      return s;
+    }
+
+    document.getElementById("btnImportFaq").onclick = () => {
+      document.getElementById("importFile").value = "";
+      document.getElementById("importMask").classList.add("open");
+    };
+
+    document.getElementById("btnDownloadTpl").onclick = () => {
+      const xml = buildFaqImportTemplateXls();
+      downloadBlobFile(
+        "FAQ导入模板.xls",
+        new Blob([xml], { type: "application/vnd.ms-excel;charset=utf-8" })
+      );
+      toast("模板已下载");
+    };
+
+    function getCategoryNameSet() {
+      return new Set(categories.map(c => String(c.nameZh || "").trim()).filter(Boolean));
+    }
+
+    function validateImportRow(row) {
+      const reasons = [];
+      const catSet = getCategoryNameSet();
+      const category = String(row.category == null ? "" : row.category).trim();
+      const titleEn = String(row.title_en == null ? "" : row.title_en).trim();
+      const bodyEn = String(row.body_en == null ? "" : row.body_en).trim();
+      if (!category || !catSet.has(category)) {
+        reasons.push("问题分类错误");
+      }
+      if (!titleEn || !bodyEn) {
+        reasons.push("英文标题或正文未填写");
+      }
+      return reasons;
+    }
+
+    function showImportResult({ successCount, failRows }) {
+      const summary = document.getElementById("importResultSummary");
+      const failBlock = document.getElementById("importFailBlock");
+      const failBody = document.getElementById("importFailTbody");
+      summary.innerHTML = `导入完成：成功 <span class="ok">${successCount}</span> 条，失败 <span class="fail">${failRows.length}</span> 条`;
+      if (failRows.length) {
+        failBlock.style.display = "block";
+        failBody.innerHTML = failRows.map(f => {
+          const titleEn = String(f.title_en == null ? "" : f.title_en).trim() || "—";
+          return `
+          <tr>
+            <td class="num">${f.row}</td>
+            <td title="${titleEn.replace(/"/g, "&quot;")}">${titleEn}</td>
+            <td>${f.reasons.join("；")}</td>
+          </tr>`;
+        }).join("");
+      } else {
+        failBlock.style.display = "none";
+        failBody.innerHTML = "";
+      }
+      document.getElementById("importResultMask").classList.add("open");
+    }
+
+    document.getElementById("btnImportConfirm").onclick = () => {
+      const file = document.getElementById("importFile").files?.[0];
+      if (!file) {
+        toast("请先上传文件", "error");
+        return;
+      }
+
+      // 原型演示：模拟模板行校验（正式实现按上传文件逐行解析）
+      const demoRows = [
+        { row: 2, category: "App 问题", title_en: "How to clear cache", body_en: "Open Settings > Storage > Clear cache.", title_zh: "如何清理缓存", body_zh: "打开设置 > 存储 > 清理缓存。" },
+        { row: 3, category: "不存在的分类", title_en: "Invalid category demo", body_en: "This row should fail category check.", title_zh: "", body_zh: "" },
+        { row: 4, category: "设备问题", title_en: "", body_en: "", title_zh: "设备离线提示", body_zh: "检查网络" },
+        { row: 5, category: "设备问题", title_en: "Device offline tips", body_en: "Check Wi-Fi 2.4GHz and reboot the device.", title_zh: "设备离线提示", body_zh: "检查 2.4GHz Wi-Fi 并重启设备。" }
+      ];
+
+      const failRows = [];
+      let successCount = 0;
+      const now = "2026-07-29 16:00";
+      const catByName = Object.fromEntries(categories.map(c => [c.nameZh, c]));
+
+      demoRows.forEach(row => {
+        const reasons = validateImportRow(row);
+        if (reasons.length) {
+          failRows.push({
+            row: row.row,
+            title_en: row.title_en,
+            reasons
+          });
+          return;
+        }
+        successCount += 1;
+        const cat = catByName[row.category.trim()];
+        faqs.unshift({
+          id: "imp" + Date.now() + successCount,
+          title: row.title_zh || row.title_en,
+          cat: cat.nameZh,
+          catCode: cat.id === "c1" ? "app" : cat.id === "c2" ? "device" : cat.id === "c3" ? "third_party" : "other",
+          status: "published",
+          langs: row.title_zh ? "en · zh" : "en",
+          views: 0, help: 0, nohelp: 0,
+          created: now,
+          updated: now,
+          tags: ["导入"],
+          body: row.body_zh || row.body_en
+        });
+      });
+
+      renderFaqs();
+      renderStats();
+      document.getElementById("importMask").classList.remove("open");
+      showImportResult({ successCount, failRows });
+    };
+
+    document.getElementById("btnExportFaq").onclick = () => {
+      const header = ["id", "category", "status", "title", "body", "link_url", "views", "created_at", "updated_at"].join(",");
+      const rows = faqs.map(f => [
+        f.id,
+        f.cat,
+        statusLabel(f.status),
+        f.title,
+        (f.body || "").replace(/<[^>]+>/g, " "),
+        f.linkUrl || "",
+        f.views,
+        f.created,
+        f.updated
+      ].map(csvEscape).join(","));
+      downloadTextFile(`FAQ导出_${Date.now()}.csv`, header + "\n" + rows.join("\n") + "\n");
+      toast(`已导出 ${faqs.length} 条`);
+    };
+
+    document.getElementById("drawerClose").onclick = closeDrawer;
+    document.getElementById("drawerMask").onclick = closeDrawer;
+    document.getElementById("btnPreview").onclick = showPreview;
+    document.getElementById("btnBackEdit").onclick = () => {
+      document.getElementById("editView").classList.remove("hidden");
+      document.getElementById("previewView").classList.add("hidden");
+      document.getElementById("editFooter").classList.remove("hidden");
+      document.getElementById("previewFooter").classList.add("hidden");
+    };
+
+    document.getElementById("btnSaveDraft").onclick = () => {
+      toast(editStatus === "published" ? "已保存，内容已更新" : "草稿已保存");
+    };
+
+    document.getElementById("btnPublish").onclick = () => {
+      const cat = document.getElementById("editCat");
+      const titleItem = document.getElementById("editTitleItem");
+      const title = document.getElementById("editTitle");
+      const bodyItem = document.getElementById("editBodyItem");
+      const linkItem = document.getElementById("editLinkItem");
+      const mode = getContentMode();
+      cat.closest(".form-item").classList.remove("has-error");
+      titleItem.classList.remove("has-error");
+      bodyItem.classList.remove("has-error");
+      linkItem.classList.remove("has-error");
+      let ok = true;
+      if (!cat.value) { cat.closest(".form-item").classList.add("has-error"); ok = false; }
+      if (!title.value.trim()) { titleItem.classList.add("has-error"); ok = false; }
+      let bodyHtml = "";
+      let linkUrl = "";
+      if (mode === "body") {
+        if (!bodyTextContent()) { bodyItem.classList.add("has-error"); ok = false; }
+        else bodyHtml = document.getElementById("editBody").innerHTML;
+      } else {
+        linkUrl = document.getElementById("editVideo").value.trim();
+        if (!isValidHttpUrl(linkUrl)) { linkItem.classList.add("has-error"); ok = false; }
+      }
+      if (!ok) { toast("请完善必填项后再发布", "error"); return; }
+
+      const catName = cat.selectedOptions[0].text;
+      if (editingId) {
+        const r = faqs.find(x => x.id === editingId);
+        r.title = title.value.trim();
+        r.cat = catName;
+        r.catCode = cat.value;
+        r.body = bodyHtml;
+        r.linkUrl = linkUrl;
+        r.status = "published";
+        r.updated = "2026-07-26 21:00";
+      } else {
+        faqs.push({
+          id: "n" + Date.now(),
+          title: title.value.trim(),
+          cat: catName,
+          catCode: cat.value,
+          status: "published",
+          langs: "en",
+          views: 0, help: 0, nohelp: 0,
+          created: "2026-07-26 21:00",
+          updated: "2026-07-26 21:00",
+          body: bodyHtml,
+          linkUrl
+        });
+      }
+      editStatus = "published";
+      document.getElementById("editStatus").value = "已发布";
+      document.getElementById("btnPublish").textContent = "发布";
+      document.getElementById("btnCopyH5").disabled = false;
+      renderFaqs();
+      renderStats();
+      toast("已发布");
+    };
+
+    const H5_LANGS = [
+      { code: "en", label: "English" },
+      { code: "zh", label: "简体中文" },
+      { code: "de", label: "Deutsch" },
+      { code: "fr", label: "Français" },
+      { code: "es", label: "Español" },
+      { code: "ja", label: "日本語" },
+      { code: "ko", label: "한국어" }
+    ];
+
+    let pendingH5Id = null;
+
+    function fillH5LangSelect() {
+      const sel = document.getElementById("h5LangSelect");
+      sel.innerHTML = `<option value="">请选择语种</option>` +
+        H5_LANGS.map(l => `<option value="${l.code}">${l.label}</option>`).join("");
+    }
+
+    function openCopyH5Dialog(id) {
+      pendingH5Id = id;
+      fillH5LangSelect();
+      document.getElementById("h5LangItem").classList.remove("has-error");
+      document.getElementById("h5LangMask").classList.add("open");
+    }
+
+    function buildH5Url(id, lang) {
+      return `https://help.example.com/h5/${id}?lang=${encodeURIComponent(lang)}`;
+    }
+
+    document.getElementById("btnH5LangCopy").onclick = () => {
+      const lang = document.getElementById("h5LangSelect").value;
+      const item = document.getElementById("h5LangItem");
+      if (!lang) {
+        item.classList.add("has-error");
+        toast("请选择语种", "error");
+        return;
+      }
+      item.classList.remove("has-error");
+      const url = buildH5Url(pendingH5Id || "new", lang);
+      navigator.clipboard?.writeText(url).catch(() => {});
+      document.getElementById("h5LangMask").classList.remove("open");
+      toast("链接已复制");
+    };
+
+    document.getElementById("btnCopyH5").onclick = () => {
+      if (document.getElementById("btnCopyH5").disabled) return;
+      openCopyH5Dialog(editingId || "new");
+    };
+
+    let pendingDelId = null;
+    let pendingOfflineId = null;
+    document.getElementById("faqTbody").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-act]");
+      if (!btn) return;
+      const id = btn.dataset.id;
+      const act = btn.dataset.act;
+      if (act === "edit") openDrawer("edit", id);
+      if (act === "preview") openDrawer("preview", id);
+      if (act === "h5" && !btn.disabled) {
+        openCopyH5Dialog(id);
+      }
+      if (act === "offline") {
+        pendingOfflineId = id;
+        const r = faqs.find(x => x.id === id);
+        document.getElementById("delTitle").textContent = "确认下架";
+        document.getElementById("delBody").textContent =
+          `确定下架「${r?.title || "该知识"}」？下架后 App 与 H5 将无法访问。`;
+        document.getElementById("delOk").textContent = "下架";
+        document.getElementById("delOk").style.background = "var(--warning)";
+        document.getElementById("delOk").style.borderColor = "var(--warning)";
+        document.getElementById("delOk").onclick = () => {
+          const item = faqs.find(x => x.id === pendingOfflineId);
+          if (item) {
+            item.status = "offline";
+            item.updated = "2026-07-27 10:00";
+          }
+          renderFaqs();
+          renderStats();
+          document.getElementById("delMask").classList.remove("open");
+          toast("已下架");
+        };
+        document.getElementById("delMask").classList.add("open");
+      }
+      if (act === "del") {
+        pendingDelId = id;
+        document.getElementById("delTitle").textContent = "确认删除";
+        document.getElementById("delBody").textContent = "确定删除该知识？删除后不可恢复，App 与 H5 将无法访问。";
+        document.getElementById("delOk").textContent = "删除";
+        document.getElementById("delOk").style.background = "var(--error)";
+        document.getElementById("delOk").style.borderColor = "var(--error)";
+        document.getElementById("delOk").onclick = () => {
+          faqs = faqs.filter(x => x.id !== pendingDelId);
+          renderFaqs();
+          renderStats();
+          document.getElementById("delMask").classList.remove("open");
+          toast("已删除");
+        };
+        document.getElementById("delMask").classList.add("open");
+      }
+    });
+
+    /* Category */
+    function renderCats(list = categories) {
+      document.getElementById("catTbody").innerHTML = list.map(c => `
+        <tr>
+          <td>${c.sort}</td>
+          <td class="col-name" title="${c.nameZh}">${c.nameZh}</td>
+          <td class="num">${c.refs}</td>
+          <td class="num">${c.created}</td>
+          <td class="col-actions">
+            <button type="button" class="btn-link" data-cact="edit" data-id="${c.id}">编辑</button>
+            <button type="button" class="btn-danger-text${c.refs > 0 && !c.preset ? " is-disabled" : ""}" data-cact="del" data-id="${c.id}" ${
+              c.preset
+                ? "disabled title='预置分类不可删除'"
+                : c.refs > 0
+                  ? "aria-disabled='true' title='该分类关联有文章'"
+                  : ""
+            }>删除</button>
+          </td>
+        </tr>
+      `).join("");
+    }
+    renderCats();
+
+    let editingCatId = null;
+    document.getElementById("btnNewCat").onclick = () => {
+      editingCatId = null;
+      document.getElementById("catFormTitle").textContent = "新建分类";
+      document.getElementById("fSort").value = categories.length + 1;
+      document.getElementById("fEn").value = "";
+      document.getElementById("fZh").value = "";
+      document.getElementById("catMask").classList.add("open");
+    };
+    document.getElementById("catSave").onclick = () => {
+      if (!document.getElementById("fEn").value.trim()) { toast("请填写 English", "error"); return; }
+      toast("已保存");
+      document.getElementById("catMask").classList.remove("open");
+    };
+    document.getElementById("catTbody").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-cact]");
+      if (!btn || btn.disabled) return;
+      const c = categories.find(x => x.id === btn.dataset.id);
+      if (btn.dataset.cact === "edit") {
+        editingCatId = c.id;
+        document.getElementById("catFormTitle").textContent = "编辑";
+        document.getElementById("fSort").value = c.sort;
+        document.getElementById("fEn").value = c.nameEn;
+        document.getElementById("fZh").value = c.nameZh;
+        document.getElementById("catMask").classList.add("open");
+      }
+      if (btn.dataset.cact === "del") {
+        if (c.preset) return;
+        if (c.refs > 0) {
+          toast("该分类关联有文章", "error");
+          return;
+        }
+        categories = categories.filter(x => x.id !== c.id);
+        renderCats();
+        toast("已删除");
+      }
+    });
+
+    /* Miss — 仅保留近 365 天 */
+    const MISS_RETENTION_DAYS = 365;
+    const MISS_TODAY = "2026-07-28";
+
+    function formatYmd(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function addDaysYmd(ymd, delta) {
+      const d = new Date(ymd + "T00:00:00");
+      d.setDate(d.getDate() + delta);
+      return formatYmd(d);
+    }
+
+    function missRetentionFloor() {
+      return addDaysYmd(MISS_TODAY, -(MISS_RETENTION_DAYS - 1));
+    }
+
+    function getRetainedMisses() {
+      const floor = missRetentionFloor();
+      return misses.filter(m => m.searchedAt.slice(0, 10) >= floor);
+    }
+
+    function resetMissDateRange() {
+      document.getElementById("missFrom").value = missRetentionFloor();
+      document.getElementById("missTo").value = MISS_TODAY;
+      document.getElementById("missFrom").min = missRetentionFloor();
+      document.getElementById("missFrom").max = MISS_TODAY;
+      document.getElementById("missTo").min = missRetentionFloor();
+      document.getElementById("missTo").max = MISS_TODAY;
+    }
+
+    function filterMissByRange(list) {
+      let from = (document.getElementById("missFrom").value || "").trim();
+      let to = (document.getElementById("missTo").value || "").trim();
+      const floor = missRetentionFloor();
+      if (from && from < floor) from = floor;
+      if (to && to > MISS_TODAY) to = MISS_TODAY;
+      return list.filter(m => {
+        const d = m.searchedAt.slice(0, 10);
+        if (from && d < from) return false;
+        if (to && d > to) return false;
+        return true;
+      });
+    }
+
+    function getMissDisplayList() {
+      const kw = document.getElementById("missKw").value.trim();
+      let list = filterMissByRange(getRetainedMisses());
+      if (kw) list = semanticFilterMisses(list, kw);
+      return [...list].sort((a, b) => b.searchedAt.localeCompare(a.searchedAt));
+    }
+
+    function validateMissDateRange() {
+      const from = (document.getElementById("missFrom").value || "").trim();
+      const to = (document.getElementById("missTo").value || "").trim();
+      const floor = missRetentionFloor();
+      if (from && from < floor) {
+        toast("仅可查询近 365 天内数据", "error");
+        document.getElementById("missFrom").value = floor;
+        return false;
+      }
+      if (to && to > MISS_TODAY) {
+        toast("结束日期不能超过今天", "error");
+        document.getElementById("missTo").value = MISS_TODAY;
+        return false;
+      }
+      if (from && to && from > to) {
+        toast("开始日期不能晚于结束日期", "error");
+        return false;
+      }
+      return true;
+    }
+
+    function renderMiss(list) {
+      const sorted = list ? [...list].sort((a, b) => b.searchedAt.localeCompare(a.searchedAt)) : getMissDisplayList();
+      document.getElementById("missTbody").innerHTML = sorted.map((m, i) => `
+        <tr>
+          <td class="num col-rank">${i + 1}</td>
+          <td class="col-title" title="${m.q}">${m.q}</td>
+          <td class="num col-time">${m.searchedAt}</td>
+          <td class="col-actions">
+            <button type="button" class="btn-link" data-miss="${m.q}">去新建</button>
+          </td>
+        </tr>
+      `).join("") || `<tr><td colspan="4" style="text-align:center;color:var(--text-helper);padding:24px">近 365 天暂无搜索内容记录</td></tr>`;
+    }
+    resetMissDateRange();
+    renderMiss();
+    document.getElementById("missTbody").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-miss]");
+      if (!btn) return;
+      document.querySelector('.page-tab[data-tab="faq"]').click();
+      openDrawer("new");
+      document.getElementById("editTitle").value = btn.dataset.miss;
+      toast("已带入搜索内容为标题草稿");
+    });
+    document.getElementById("missQuery").onclick = () => {
+      if (!validateMissDateRange()) return;
+      renderMiss();
+    };
+    document.getElementById("missReset").onclick = () => {
+      document.getElementById("missKw").value = "";
+      resetMissDateRange();
+      renderMiss();
+    };
+    document.getElementById("missExport").onclick = () => {
+      if (!validateMissDateRange()) return;
+      const list = getMissDisplayList();
+      if (!list.length) {
+        toast("暂无数据可导出", "error");
+        return;
+      }
+      const header = ["序号", "搜索内容", "搜索时间"].join(",");
+      const rows = list.map((m, i) => [i + 1, m.q, m.searchedAt].map(csvEscape).join(","));
+      downloadTextFile(`搜索内容导出_${Date.now()}.csv`, header + "\n" + rows.join("\n") + "\n");
+      toast(`已导出 ${list.length} 条`);
+    };
+
+    /* Stats */
+    function getHotDateRange() {
+      return {
+        from: (document.getElementById("hotFrom").value || "").trim(),
+        to: (document.getElementById("hotTo").value || "").trim()
+      };
+    }
+
+    /** 原型：有时间范围时按区间模拟统计值；无范围则为累计全量 */
+    function periodMetrics(f, from, to) {
+      if (!from && !to) {
+        return { views: f.views, help: f.help, nohelp: f.nohelp };
+      }
+      const seed = [...(f.id + "|" + from + "|" + to)].reduce((s, c) => s + c.charCodeAt(0), 0);
+      const ratio = 0.25 + (seed % 55) / 100;
+      return {
+        views: Math.max(0, Math.round(f.views * ratio)),
+        help: Math.max(0, Math.round(f.help * ratio)),
+        nohelp: Math.max(0, Math.round(f.nohelp * ratio))
+      };
+    }
+
+    function renderStats() {
+      const published = faqs.filter(f => f.status === "published");
+      const views = published.reduce((s, f) => s + f.views, 0);
+      const help = published.reduce((s, f) => s + f.help, 0);
+      const nohelp = published.reduce((s, f) => s + f.nohelp, 0);
+      document.getElementById("kpiPub").textContent = published.length;
+      document.getElementById("kpiView").textContent = views.toLocaleString();
+      document.getElementById("kpiHelp").textContent = help;
+      document.getElementById("kpiRate").textContent = rate(help, nohelp);
+
+      const { from, to } = getHotDateRange();
+      const rows = published
+        .map(f => {
+          const m = periodMetrics(f, from, to);
+          return { ...f, periodViews: m.views, periodHelp: m.help, periodNohelp: m.nohelp };
+        })
+        .filter(f => f.periodViews > 0 || (!from && !to))
+        .sort((a, b) => {
+          if (b.periodViews !== a.periodViews) return b.periodViews - a.periodViews;
+          return a.created.localeCompare(b.created);
+        })
+        .slice(0, 10);
+
+      document.getElementById("statsTbody").innerHTML = rows.map((r, i) => `
+        <tr>
+          <td class="num col-rank">${i + 1}</td>
+          <td class="col-title" title="${r.title}">${r.title}</td>
+          <td class="col-cat">${r.cat}</td>
+          <td class="num col-num">${r.periodViews}</td>
+          <td class="num col-num">${r.periodHelp}</td>
+          <td class="num col-num">${r.periodNohelp}</td>
+          <td class="num col-num">${rate(r.periodHelp, r.periodNohelp)}</td>
+          <td class="num col-time">${r.updated}</td>
+          <td class="col-actions">
+            <button type="button" class="btn-link" data-stat-edit="${r.id}">编辑</button>
+          </td>
+        </tr>
+      `).join("") || `<tr><td colspan="9" style="text-align:center;color:var(--text-helper);padding:24px">所选时间范围内暂无数据</td></tr>`;
+    }
+    renderStats();
+
+    document.getElementById("hotQuery").onclick = () => {
+      const { from, to } = getHotDateRange();
+      if (from && to && from > to) {
+        toast("开始日期不能晚于结束日期", "error");
+        return;
+      }
+      renderStats();
+      toast(from || to ? "已按时间范围更新 Top10" : "已按累计全量更新 Top10");
+    };
+    document.getElementById("hotReset").onclick = () => {
+      document.getElementById("hotFrom").value = "";
+      document.getElementById("hotTo").value = "";
+      renderStats();
+    };
+
+    document.getElementById("statsTbody").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-stat-edit]");
+      if (!btn) return;
+      document.querySelector('.page-tab[data-tab="faq"]').click();
+      openDrawer("edit", btn.dataset.statEdit);
+    });
+
+    document.querySelectorAll("[data-close]").forEach(b => {
+      b.addEventListener("click", () => document.getElementById(b.dataset.close).classList.remove("open"));
+    });
+
+    document.querySelectorAll(".lang-tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".lang-tab").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+      });
+    });
+  </script>
+</body>
+</html>
