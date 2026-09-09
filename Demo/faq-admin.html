@@ -21,8 +21,12 @@
       </div>
       <nav class="sidebar-nav">
         <div class="nav-group">
+          <div class="nav-l1">▤ 看板<span class="arrow">›</span></div>
+          <div class="nav-l2" data-page="core" role="button" tabindex="0">核心数据</div>
+        </div>
+        <div class="nav-group">
           <div class="nav-l1">▣ 配置<span class="arrow">›</span></div>
-          <div class="nav-l2 active">FAQ 管理</div>
+          <div class="nav-l2 active" data-page="faq" role="button" tabindex="0">FAQ 管理</div>
         </div>
       </nav>
     </aside>
@@ -40,6 +44,7 @@
       </header>
 
       <main class="content">
+        <div id="page-faq" class="page-view active">
         <div class="panel-card">
           <div class="page-tabs" role="tablist">
             <button type="button" class="page-tab active" data-tab="faq" role="tab">FAQ 管理</button>
@@ -204,10 +209,6 @@
                 搜索内容<span class="section-title-note">（仅保留近 365 天数据，超期自动清理）</span>
               </div>
               <div class="filter-row" style="margin-bottom:12px">
-                <div class="filter-item is-search">
-                  <span class="label">搜索</span>
-                  <input class="control" id="missKw" placeholder="语义检索搜索内容" />
-                </div>
                 <div class="filter-item">
                   <span class="label">时间范围</span>
                   <input class="control" id="missFrom" type="date" />
@@ -240,6 +241,135 @@
             </div>
           </section>
         </div>
+        </div>
+
+        <!-- ========== 看板 · 核心数据 ========== -->
+        <div id="page-core" class="page-view">
+          <div class="panel-card">
+            <div class="dash-section">
+              <div class="sec-head">
+                <h3>核心数据</h3>
+                <div class="sec-time">
+                  <button type="button" class="sec-time-nav" data-sec-shift="overview" data-dir="-1" aria-label="上一时段">‹</button>
+                  <button type="button" class="sec-time-label" data-sec-label="overview"></button>
+                  <button type="button" class="sec-time-nav" data-sec-shift="overview" data-dir="1" aria-label="下一时段">›</button>
+                </div>
+              </div>
+              <p class="dash-block-title">用户数据</p>
+              <div class="kpi-row" id="kpiUser"></div>
+              <p class="dash-block-title">设备数据</p>
+              <div class="kpi-row" id="kpiDevice"></div>
+              <p class="dash-block-title">使用数据</p>
+              <div class="kpi-row" id="kpiUsage"></div>
+              <p class="dash-block-title">流失及回流</p>
+              <div class="kpi-row" id="kpiChurn"></div>
+            </div>
+
+            <div class="dash-section">
+              <div class="sec-head">
+                <h3>留存统计</h3>
+                <div class="sec-time">
+                  <button type="button" class="sec-time-nav" data-sec-shift="ret" data-dir="-1" aria-label="上一时段">‹</button>
+                  <button type="button" class="sec-time-label" data-sec-label="ret"></button>
+                  <button type="button" class="sec-time-nav" data-sec-shift="ret" data-dir="1" aria-label="下一时段">›</button>
+                </div>
+              </div>
+              <div class="dash-chart-grid">
+                <div class="dash-chart-card span-2 compact">
+                  <div class="ret-toolbar">
+                    <div class="dash-legend">
+                      <span><i style="background:var(--brand-primary)"></i>活跃日留存 <button type="button" class="metric-tip" data-tip="ret_active" aria-label="活跃日留存说明">?</button></span>
+                      <span><i style="background:var(--warning)"></i>新增日留存 <button type="button" class="metric-tip" data-tip="ret_new" aria-label="新增日留存说明">?</button></span>
+                    </div>
+                    <div class="ret-window" id="retWindowSwitch">
+                      <button type="button" class="range-pill active" data-ret-win="d1">次日</button>
+                      <button type="button" class="range-pill" data-ret-win="d7">7日</button>
+                      <button type="button" class="range-pill" data-ret-win="d30">30日</button>
+                    </div>
+                  </div>
+                  <div class="chart-hover-wrap">
+                    <svg class="ret-bar-svg" id="chartRet" viewBox="0 0 720 256" preserveAspectRatio="none"></svg>
+                    <div class="chart-tip" hidden></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="dash-section">
+              <div class="sec-head">
+                <h3>分布统计</h3>
+                <div class="sec-time">
+                  <button type="button" class="sec-time-nav" data-sec-shift="dist" data-dir="-1" aria-label="上一时段">‹</button>
+                  <button type="button" class="sec-time-label" data-sec-label="dist"></button>
+                  <button type="button" class="sec-time-nav" data-sec-shift="dist" data-dir="1" aria-label="下一时段">›</button>
+                </div>
+              </div>
+              <div class="dash-chart-grid-2">
+                <div class="dash-chart-card compact">
+                  <div class="dash-chart-title">
+                    <span class="dash-chart-name">手机型号分布 <button type="button" class="metric-tip" data-tip="pie_model" aria-label="手机型号分布说明">?</button></span>
+                    <div class="pie-cat" data-pie-kind="model">
+                      <button type="button" class="range-pill active" data-pie-cat="all">全部</button>
+                      <button type="button" class="range-pill" data-pie-cat="ios">iOS</button>
+                      <button type="button" class="range-pill" data-pie-cat="android">Android</button>
+                    </div>
+                  </div>
+                  <div class="chart-hover-wrap pie-hover-wrap">
+                    <div class="os-split" id="pieModel"></div>
+                    <div class="chart-tip pie-tip" hidden></div>
+                  </div>
+                </div>
+                <div class="dash-chart-card compact">
+                  <div class="dash-chart-title">
+                    <span class="dash-chart-name">APP 版本分布 <button type="button" class="metric-tip" data-tip="pie_version" aria-label="APP 版本分布说明">?</button></span>
+                    <div class="pie-cat" data-pie-kind="version">
+                      <button type="button" class="range-pill active" data-pie-cat="all">全部</button>
+                      <button type="button" class="range-pill" data-pie-cat="ios">iOS</button>
+                      <button type="button" class="range-pill" data-pie-cat="android">Android</button>
+                    </div>
+                  </div>
+                  <div class="chart-hover-wrap pie-hover-wrap">
+                    <div class="os-split" id="pieVersion"></div>
+                    <div class="chart-tip pie-tip" hidden></div>
+                  </div>
+                </div>
+                <div class="dash-chart-card compact">
+                  <div class="dash-chart-title">
+                    <span class="dash-chart-name">SKU 分布 <button type="button" class="metric-tip" data-tip="pie_sku" aria-label="SKU 分布说明">?</button></span>
+                    <div class="pie-cat" data-pie-kind="sku">
+                      <button type="button" class="range-pill active" data-pie-cat="all">全部</button>
+                      <button type="button" class="range-pill" data-pie-cat="light">灯类</button>
+                      <button type="button" class="range-pill" data-pie-cat="appliance">家电类</button>
+                    </div>
+                  </div>
+                  <div class="chart-hover-wrap pie-hover-wrap">
+                    <div class="os-split" id="pieSku"></div>
+                    <div class="chart-tip pie-tip" hidden></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="dash-section">
+              <div class="sec-head">
+                <h3>核心指标数据</h3>
+                <div class="sec-time">
+                  <button type="button" class="sec-time-nav" data-sec-shift="core" data-dir="-1" aria-label="上一时段">‹</button>
+                  <button type="button" class="sec-time-label" data-sec-label="core"></button>
+                  <button type="button" class="sec-time-nav" data-sec-shift="core" data-dir="1" aria-label="下一时段">›</button>
+                </div>
+              </div>
+              <div class="core-trend-panel">
+                <div class="metric-chips" id="coreChips"></div>
+                <div class="chart-hover-wrap">
+                  <svg class="core-line-svg" id="coreMainChart" viewBox="0 0 720 268" preserveAspectRatio="none"></svg>
+                  <div class="chart-tip" hidden></div>
+                </div>
+                <div class="core-treemap-legend" id="coreLegend"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </main>
     </div>
   </div>
@@ -268,10 +398,7 @@
           <label>状态</label>
           <input class="input" id="editStatus" value="草稿" disabled />
         </div>
-        <div class="lang-tabs">
-          <button type="button" class="lang-tab active" data-lang="en">English</button>
-          <button type="button" class="lang-tab" data-lang="zh">简体中文</button>
-        </div>
+        <div class="lang-tabs" id="faqLangTabs"></div>
         <div class="form-item" id="editTitleItem">
           <label><span class="req">*</span>标题</label>
           <input class="input" id="editTitle" maxlength="100" placeholder="不超过 100 字符" />
@@ -368,24 +495,17 @@
 
   <!-- Category dialog -->
   <div class="mask" id="catMask" role="dialog" aria-modal="true">
-    <div class="dialog" style="width:520px">
+    <div class="dialog" style="width:560px">
       <div class="dialog-header">
         <span id="catFormTitle">新建分类</span>
         <button type="button" class="btn-icon" data-close="catMask" aria-label="关闭">✕</button>
       </div>
-      <div class="dialog-body" style="padding-top:16px">
+      <div class="dialog-body" style="padding-top:16px;max-height:70vh;overflow:auto">
         <div class="form-item">
           <label><span class="req">*</span>排序</label>
           <input class="input" id="fSort" type="number" value="10" />
         </div>
-        <div class="form-item">
-          <label><span class="req">*</span>English</label>
-          <input class="input" id="fEn" placeholder="必填，用于回退" />
-        </div>
-        <div class="form-item">
-          <label>简体中文</label>
-          <input class="input" id="fZh" />
-        </div>
+        <div id="catLangFields"></div>
       </div>
       <div class="dialog-footer">
         <button type="button" class="btn" data-close="catMask">取消</button>
@@ -415,9 +535,9 @@
         <div class="import-tips">
           <div class="import-tips-title">填写说明</div>
           <ul>
-            <li>问题分类（必填）、title_en（必填）、body_en（必填）</li>
-            <li>问题分类须为「分类管理」中已有分类；其他语种非必填</li>
-            <li>一行一条 FAQ；导入成功后即为发布状态</li>
+            <li>问题分类（必填）、英文标题（必填）、英文正文（必填）</li>
+            <li>另含其余语种的「xx标题 / xx正文」列，均为非必填</li>
+            <li>问题分类须为「分类管理」中已有分类；导入成功后为草稿，需发布后才上线</li>
           </ul>
         </div>
       </div>
@@ -474,7 +594,7 @@
           </select>
         </div>
         <div class="form-hint" style="margin-top:-4px;color:var(--text-tertiary);font-size:12px;line-height:1.5">
-          链接将按所选语种打开；若该语种无内容，H5 回退 English。
+          链接将按所选语种打开；若该语种无内容，H5 回退英文。
         </div>
       </div>
       <div class="dialog-footer">
@@ -537,6 +657,23 @@
       { id: "c2", sort: 2, nameZh: "设备问题", nameEn: "Device Issues", preset: true, refs: 4, created: "2026-07-10 10:00" },
       { id: "c3", sort: 3, nameZh: "第三方问题", nameEn: "Third-party", preset: true, refs: 2, created: "2026-07-10 10:00" },
       { id: "c4", sort: 4, nameZh: "其他", nameEn: "Other", preset: true, refs: 3, created: "2026-07-10 10:00" }
+    ];
+
+    let faqLang = "en";
+    const CONTENT_LANGS = [
+      { code: "zh", label: "简体中文" },
+      { code: "en", label: "英文", required: true, field: "en" },
+      { code: "fr", label: "法语" },
+      { code: "de", label: "德语" },
+      { code: "it", label: "意大利语" },
+      { code: "es", label: "西班牙语" },
+      { code: "ja", label: "日语" },
+      { code: "pl", label: "波兰语" },
+      { code: "tr", label: "土耳其语" },
+      { code: "zh-TW", label: "繁体中文" },
+      { code: "ru", label: "俄语" },
+      { code: "pt", label: "葡萄牙语" },
+      { code: "ar", label: "阿拉伯语", rtl: true }
     ];
 
     let misses = [
@@ -628,38 +765,6 @@
           if (b.score !== a.score) return b.score - a.score;
           if (b.item.views !== a.item.views) return b.item.views - a.item.views;
           return a.item.created.localeCompare(b.item.created);
-        })
-        .map(x => x.item);
-    }
-
-    function semanticFilterMisses(source, kw) {
-      if (!kw) return [...source];
-      const terms = expandQueryTerms(kw);
-      const scored = source.map((m, idx) => ({
-        item: m,
-        idx,
-        score: scoreByTerms({ title: m.q, body: "" }, m.tags, terms)
-      }));
-      const direct = scored.filter(x => x.score > 0);
-      if (!direct.length) return [];
-      const hitIdx = new Set(direct.map(x => x.idx));
-      const relatedTags = new Set();
-      direct.forEach(({ item }) => {
-        (item.tags || []).forEach(t => relatedTags.add(String(t).toLowerCase()));
-      });
-      scored.forEach(row => {
-        if (hitIdx.has(row.idx)) return;
-        const tags = (row.item.tags || []).map(t => String(t).toLowerCase());
-        if (tags.some(t => relatedTags.has(t))) {
-          row.score = Math.max(row.score, 4);
-          hitIdx.add(row.idx);
-        }
-      });
-      return scored
-        .filter(x => x.score > 0)
-        .sort((a, b) => {
-          if (b.score !== a.score) return b.score - a.score;
-          return b.item.searchedAt.localeCompare(a.item.searchedAt);
         })
         .map(x => x.item);
     }
@@ -794,6 +899,11 @@
       document.getElementById("previewView").classList.add("hidden");
       document.getElementById("editFooter").classList.remove("hidden");
       document.getElementById("previewFooter").classList.add("hidden");
+      faqLang = "en";
+      if (typeof bindFaqLangTabs === "function") bindFaqLangTabs();
+      applyRtl(document.getElementById("editTitle"), faqLang);
+      applyRtl(document.getElementById("editBody"), faqLang);
+      applyRtl(document.getElementById("editVideo"), faqLang);
 
       if (mode === "new") {
         editingId = null;
@@ -927,27 +1037,55 @@
         .replace(/"/g, "&quot;");
     }
 
+    function langFieldKey(lang) {
+      return String(lang.field || lang.code).replace(/-/g, "_");
+    }
+
     function buildFaqImportTemplateXls() {
       const catNames = categories.map(c => c.nameZh);
       const catList = `"${catNames.join(",")}"`;
-      // 表头 +（必填）提示；解析时按列序映射 category / title_en / body_en / title_zh / body_zh
-      const headers = [
-        "问题分类（必填）",
-        "title_en（必填）",
-        "body_en（必填）",
-        "简体中文标题",
-        "简体中文正文"
+      const importLangs = [
+        ...CONTENT_LANGS.filter(l => l.required),
+        ...CONTENT_LANGS.filter(l => !l.required)
       ];
+      const headers = ["问题分类（必填）"];
+      importLangs.forEach(l => {
+        const mark = l.required ? "（必填）" : "";
+        headers.push(`${l.label}标题${mark}`, `${l.label}正文${mark}`);
+      });
       const headerCells = headers.map(h =>
         `<Cell ss:StyleID="Header"><Data ss:Type="String">${xmlEscape(h)}</Data></Cell>`
       ).join("");
-      const sample1 = ["App 问题", "How to clear cache", "Open Settings > Storage > Clear cache.", "如何清理缓存", "打开设置 > 存储 > 清理缓存。"];
-      const sample2 = ["设备问题", "Device offline tips", "Check Wi-Fi 2.4GHz and reboot the device.", "设备离线提示", "检查 2.4GHz Wi-Fi 并重启设备。"];
-      const sampleRows = [sample1, sample2].map((row, ri) =>
-        `<Row ss:Index="${ri + 2}">${row.map(v =>
+      const sample1Map = {
+        category: "App 问题",
+        title_en: "How to clear cache",
+        body_en: "Open Settings > Storage > Clear cache.",
+        title_zh: "如何清理缓存",
+        body_zh: "打开设置 > 存储 > 清理缓存。"
+      };
+      const sample2Map = {
+        category: "设备问题",
+        title_en: "Device offline tips",
+        body_en: "Check Wi-Fi 2.4GHz and reboot the device.",
+        title_zh: "设备离线提示",
+        body_zh: "检查 2.4GHz Wi-Fi 并重启设备。"
+      };
+      const buildSampleRow = (map) => {
+        const row = [map.category];
+        importLangs.forEach(l => {
+          const key = langFieldKey(l);
+          row.push(map[`title_${key}`] || "", map[`body_${key}`] || "");
+        });
+        return row;
+      };
+      const sampleRows = [sample1Map, sample2Map].map((map, ri) =>
+        `<Row ss:Index="${ri + 2}">${buildSampleRow(map).map(v =>
           `<Cell><Data ss:Type="String">${xmlEscape(v)}</Data></Cell>`
         ).join("")}</Row>`
       ).join("");
+      const colXml = headers.map((_, i) =>
+        `<Column ss:Width="${i === 0 ? 120 : i % 2 === 1 ? 160 : 220}"/>`
+      ).join("\n   ");
 
       return `<?xml version="1.0"?>
 <?mso-application progid="Excel.Sheet"?>
@@ -961,11 +1099,7 @@
  </Styles>
  <Worksheet ss:Name="FAQ导入">
   <Table>
-   <Column ss:Width="120"/>
-   <Column ss:Width="160"/>
-   <Column ss:Width="220"/>
-   <Column ss:Width="140"/>
-   <Column ss:Width="220"/>
+   ${colXml}
    <Row ss:Index="1">${headerCells}</Row>
    ${sampleRows}
   </Table>
@@ -1077,7 +1211,7 @@
           title: row.title_zh || row.title_en,
           cat: cat.nameZh,
           catCode: cat.id === "c1" ? "app" : cat.id === "c2" ? "device" : cat.id === "c3" ? "third_party" : "other",
-          status: "published",
+          status: "draft",
           langs: row.title_zh ? "en · zh" : "en",
           views: 0, help: 0, nohelp: 0,
           created: now,
@@ -1183,15 +1317,7 @@
       toast("已发布");
     };
 
-    const H5_LANGS = [
-      { code: "en", label: "English" },
-      { code: "zh", label: "简体中文" },
-      { code: "de", label: "Deutsch" },
-      { code: "fr", label: "Français" },
-      { code: "es", label: "Español" },
-      { code: "ja", label: "日本語" },
-      { code: "ko", label: "한국어" }
-    ];
+    const H5_LANGS = CONTENT_LANGS;
 
     let pendingH5Id = null;
 
@@ -1307,19 +1433,91 @@
     }
     renderCats();
 
+    function renderLangTabs(containerId, activeCode, onSelect) {
+      const el = document.getElementById(containerId);
+      if (!el) return;
+      el.innerHTML = CONTENT_LANGS.map(l =>
+        `<button type="button" class="lang-tab${l.code === activeCode ? " active" : ""}" data-lang="${l.code}">${l.label}${l.required ? " *" : ""}</button>`
+      ).join("");
+      el.querySelectorAll(".lang-tab").forEach(tab => {
+        tab.addEventListener("click", () => onSelect(tab.dataset.lang));
+      });
+    }
+
+    function applyRtl(el, langCode) {
+      if (!el) return;
+      const lang = CONTENT_LANGS.find(l => l.code === langCode);
+      el.setAttribute("dir", lang && lang.rtl ? "rtl" : "ltr");
+    }
+
     let editingCatId = null;
+
+    function catNameInputId(code) {
+      return "fCatName_" + String(code).replace(/-/g, "_");
+    }
+
+    function renderCatLangFields() {
+      const wrap = document.getElementById("catLangFields");
+      if (!wrap || wrap.dataset.ready) return;
+      wrap.innerHTML = CONTENT_LANGS.map(l => {
+        const req = l.required ? `<span class="req">*</span>` : "";
+        const ph = l.required ? "必填，用于回退" : "选填";
+        const dir = l.rtl ? ` dir="rtl"` : "";
+        return `<div class="form-item">
+          <label>${req}${l.label}</label>
+          <input class="input" id="${catNameInputId(l.code)}" placeholder="${ph}"${dir} />
+        </div>`;
+      }).join("");
+      wrap.dataset.ready = "1";
+    }
+
+    function fillCatLangFields(cat) {
+      renderCatLangFields();
+      CONTENT_LANGS.forEach(l => {
+        const el = document.getElementById(catNameInputId(l.code));
+        if (!el) return;
+        let val = "";
+        if (cat) {
+          if (cat.names && cat.names[l.code]) val = cat.names[l.code];
+          else if (l.code === "en") val = cat.nameEn || "";
+          else if (l.code === "zh") val = cat.nameZh || "";
+        }
+        el.value = val;
+      });
+    }
+
+    function readCatLangFields() {
+      const names = {};
+      CONTENT_LANGS.forEach(l => {
+        const el = document.getElementById(catNameInputId(l.code));
+        names[l.code] = el ? el.value : "";
+      });
+      return names;
+    }
+
+    function openCatForm(cat) {
+      fillCatLangFields(cat);
+    }
+
     document.getElementById("btnNewCat").onclick = () => {
       editingCatId = null;
       document.getElementById("catFormTitle").textContent = "新建分类";
       document.getElementById("fSort").value = categories.length + 1;
-      document.getElementById("fEn").value = "";
-      document.getElementById("fZh").value = "";
+      openCatForm(null);
       document.getElementById("catMask").classList.add("open");
     };
     document.getElementById("catSave").onclick = () => {
-      if (!document.getElementById("fEn").value.trim()) { toast("请填写 English", "error"); return; }
+      const names = readCatLangFields();
+      if (!String(names.en || "").trim()) { toast("请填写英文", "error"); return; }
+      const cat = categories.find(x => x.id === editingCatId);
+      if (cat) {
+        cat.nameEn = names.en.trim();
+        cat.nameZh = String(names.zh || "").trim() || cat.nameEn;
+        cat.names = { ...names };
+      }
       toast("已保存");
       document.getElementById("catMask").classList.remove("open");
+      renderCats();
     };
     document.getElementById("catTbody").addEventListener("click", (e) => {
       const btn = e.target.closest("[data-cact]");
@@ -1329,8 +1527,7 @@
         editingCatId = c.id;
         document.getElementById("catFormTitle").textContent = "编辑";
         document.getElementById("fSort").value = c.sort;
-        document.getElementById("fEn").value = c.nameEn;
-        document.getElementById("fZh").value = c.nameZh;
+        openCatForm(c);
         document.getElementById("catMask").classList.add("open");
       }
       if (btn.dataset.cact === "del") {
@@ -1395,10 +1592,7 @@
     }
 
     function getMissDisplayList() {
-      const kw = document.getElementById("missKw").value.trim();
-      let list = filterMissByRange(getRetainedMisses());
-      if (kw) list = semanticFilterMisses(list, kw);
-      return [...list].sort((a, b) => b.searchedAt.localeCompare(a.searchedAt));
+      return [...filterMissByRange(getRetainedMisses())].sort((a, b) => b.searchedAt.localeCompare(a.searchedAt));
     }
 
     function validateMissDateRange() {
@@ -1450,7 +1644,6 @@
       renderMiss();
     };
     document.getElementById("missReset").onclick = () => {
-      document.getElementById("missKw").value = "";
       resetMissDateRange();
       renderMiss();
     };
@@ -1556,12 +1749,1253 @@
       b.addEventListener("click", () => document.getElementById(b.dataset.close).classList.remove("open"));
     });
 
-    document.querySelectorAll(".lang-tab").forEach(tab => {
-      tab.addEventListener("click", () => {
-        document.querySelectorAll(".lang-tab").forEach(t => t.classList.remove("active"));
-        tab.classList.add("active");
+    function bindFaqLangTabs() {
+      renderLangTabs("faqLangTabs", faqLang, (next) => {
+        faqLang = next;
+        bindFaqLangTabs();
+        applyRtl(document.getElementById("editTitle"), faqLang);
+        applyRtl(document.getElementById("editBody"), faqLang);
+        applyRtl(document.getElementById("editVideo"), faqLang);
+      });
+    }
+    bindFaqLangTabs();
+
+    /* —— Govee Life 核心数据看板 —— */
+    const DASH_LATEST = "2026-09-07";
+    const DASH_UPDATED_AT = "2026-09-08 00:12";
+    const DASH_FIRST = "2026-08-09";
+    const PAGE_CRUMB = {
+      faq: ["配置", "FAQ 管理"],
+      core: ["看板", "核心数据"]
+    };
+    const PIE_COLORS = ["#0087FF", "#FAA700", "#3DC456", "#8690AA", "#F45C5C", "#6B7CFF"];
+    const METRIC_TIPS = {
+      cum_users: "统计日结束为止，注册 App 账号用户总数",
+      new_users: "统计日内第一次完成 App 账号注册的用户",
+      pair_rate: "当天新注册的人里，有多少人在注册当天就把至少 1 台灯配上网。意义：改善低质量设备配网流畅度；新用户增、转化降，说明设备激活质量在变差，上市新 SKU 时可重点查看该数据",
+      active_users: "统计日内有登录 App 账号的用户",
+      cum_activated: "统计日结束为止，完成首次配网绑定的设备总数",
+      new_activated: "统计日内第一次完成配网绑定成功的设备数",
+      active_devices: "统计日内有被下发操作指令的设备",
+      online_rate: "统计日内出现过在线的设备 ÷ 累计激活设备数",
+      opens: "统计日内打开 App 次数统计",
+      opens_new: "统计日内新增用户打开 App 的次数",
+      pv: "统计日内页面预览次数（PV）",
+      pages_per_user: "统计日内，页面预览次数（PV）÷ 打开 App 用户（UV）",
+      depth: "统计日内，页面预览次数（PV）÷ 打开次数",
+      churned: "截至当日，在累计用户中，过去 90 天内没有访问过 App 的用户",
+      returned: "在累计用户中，过去 90 天内无访问，但当日有访问的用户",
+      ret_active: "在某一天活跃的所有用户，在后续某一天（次日、第 7 日、第 30 日）仍活跃的比例。活跃日留存如果长期低于新增日留存，说明老用户在流失",
+      ret_new: "在某一天新增的用户，在后续某一天（次日、第 7 日、第 30 日）仍使用产品的比例",
+      pie_model: "App 在不同手机型号的下载分布",
+      pie_version: "用户已安装 App 的版本分布",
+      pie_sku: "累计激活设备数中的 SKU 分布"
+    };
+    const CORE_CHIPS = [
+      { id: "cum_users", label: "累计用户数", tip: "cum_users", kind: "count" },
+      { id: "dau", label: "活跃用户数", tip: "active_users", kind: "count" },
+      { id: "new_users", label: "新增用户", tip: "new_users", kind: "count" },
+      { id: "cum_activated", label: "累计激活设备数", tip: "cum_activated", kind: "count" },
+      { id: "new_activated", label: "新增激活设备数", tip: "new_activated", kind: "count" },
+      { id: "active_devices", label: "活跃设备数", tip: "active_devices", kind: "count" },
+      { id: "opens", label: "打开次数", tip: "opens", kind: "count" },
+      { id: "opens_new", label: "打开次数（新用户）", tip: "opens_new", kind: "count" },
+      { id: "pv", label: "访问页面数", tip: "pv", kind: "count" },
+      { id: "churned", label: "流失用户数", tip: "churned", kind: "count" },
+      { id: "returned", label: "回流用户数", tip: "returned", kind: "count" }
+    ];
+    const WEEKDAY = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+    const CORE_COLORS = ["#0087FF", "#FAA700", "#3DC456", "#6B7CFF", "#F45C5C", "#00B8A9", "#8690AA", "#C45CD4", "#3D9CFF", "#E6A817", "#5B8C5A", "#D96C6C"];
+
+    let dashDaily = [];
+    let retWin = "d1";
+    let pieCat = { model: "all", version: "all", sku: "all" };
+    let coreMetrics = [];
+    let openTipEl = null;
+    const SEC_IDS = ["overview", "ret", "dist", "core"];
+    const yesterdayWin = { from: DASH_LATEST, to: DASH_LATEST };
+    const last30Win = { from: DASH_FIRST, to: DASH_LATEST };
+    let secRange = {
+      overview: { ...yesterdayWin },
+      ret: { ...last30Win },
+      dist: { ...yesterdayWin },
+      core: { ...last30Win }
+    };
+    function isDayPickerSec(id) {
+      return id === "dist";
+    }
+
+    function ymdAdd(ymd, delta) {
+      const d = new Date(ymd + "T00:00:00");
+      d.setDate(d.getDate() + delta);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+    function ymdAddYear(ymd, years) {
+      const d = new Date(ymd + "T00:00:00");
+      const day = d.getDate();
+      d.setFullYear(d.getFullYear() + years);
+      if (d.getDate() !== day) d.setDate(0);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${dd}`;
+    }
+    function fmtNum(n) {
+      if (n == null || Number.isNaN(n)) return "—";
+      return Math.round(n).toLocaleString("zh-CN");
+    }
+    function fmtPct(ratio) {
+      if (ratio == null || Number.isNaN(ratio)) return "—";
+      return (ratio * 100).toFixed(1) + "%";
+    }
+    function deltaClass(ratio) {
+      if (ratio == null || Number.isNaN(ratio) || ratio === 0) return "flat";
+      return ratio > 0 ? "up" : "down";
+    }
+    function dod(curr, prev) {
+      if (curr == null || prev == null || prev === 0) return null;
+      return (curr - prev) / prev;
+    }
+
+    function buildDashDaily() {
+      const rows = [];
+      let cumUsers = 180000;
+      let cumActivated = 220000;
+      let churned = 18000;
+      for (let i = 399; i >= 0; i--) {
+        const date = ymdAdd(DASH_LATEST, -i);
+        const t = i <= 29 ? 29 - i : 0;
+        const wave = 399 - i;
+        const newUsers = i <= 29
+          ? Math.round(10200 + t * 52 + Math.sin(t / 2.4) * 380)
+          : Math.round(2800 + Math.sin(wave / 2.4) * 200);
+        const dau = i <= 29
+          ? Math.round(41200 + t * 210 + Math.sin(t / 1.8) * 1600)
+          : Math.round(28000 + Math.sin(wave / 1.8) * 1200);
+        const paired = Math.round(newUsers * (0.58 + Math.sin((i <= 29 ? t : wave) / 5) * 0.04));
+        const newAct = i <= 29
+          ? Math.round(8200 + t * 48 + Math.sin(t / 2.1) * 320)
+          : Math.round(2400 + Math.sin(wave / 2.1) * 180);
+        const activeDev = i <= 29
+          ? Math.round(162000 + t * 720 + Math.sin(t / 2) * 4200)
+          : Math.round(98000 + Math.sin(wave / 2) * 3200);
+        cumUsers += newUsers;
+        cumActivated += newAct;
+        const w = i <= 29 ? t : wave;
+        const onlineDev = Math.round(cumActivated * (0.705 + Math.sin(w / 5) * 0.018));
+        const opens = Math.round(dau * (1.32 + Math.sin(w / 3) * 0.06));
+        const pv = Math.round(opens * (2.35 + Math.sin(w / 4) * 0.15));
+        const opensNew = Math.round(newUsers * (1.72 + Math.sin(w / 5) * 0.08));
+        churned = Math.round(churned + 85 + Math.sin(w / 6) * 30);
+        const returned = Math.round(210 + (i <= 29 ? t * 3 : 40) + Math.sin(w / 2.2) * 40);
+        rows.push({
+          date,
+          new_users: newUsers,
+          cum_users: cumUsers,
+          dau,
+          paired,
+          new_activated: newAct,
+          cum_activated: cumActivated,
+          active_devices: activeDev,
+          online_devices: Math.min(onlineDev, cumActivated),
+          opens,
+          pv,
+          opens_new: opensNew,
+          churned,
+          returned,
+          ret_active_d1: 0.412 + Math.sin(t / 6) * 0.016,
+          ret_active_d7: 0.186 + Math.sin(t / 7) * 0.01,
+          ret_active_d30: 0.092 + Math.sin(t / 8) * 0.006,
+          ret_new_d1: 0.368 + Math.sin(t / 6) * 0.018,
+          ret_new_d7: 0.214 + Math.sin(t / 7) * 0.012,
+          ret_new_d30: 0.118 + Math.sin(t / 8) * 0.008
+        });
+      }
+      return rows;
+    }
+    dashDaily = buildDashDaily();
+
+    const PIE_MODEL = {
+      all: [
+        { name: "iPhone 15", share: 0.22 },
+        { name: "华为 Mate", share: 0.18 },
+        { name: "小米 14", share: 0.16 },
+        { name: "OPPO / vivo", share: 0.15 },
+        { name: "iPhone 14", share: 0.14 },
+        { name: "荣耀", share: 0.07 },
+        { name: "三星", share: 0.05 },
+        { name: "iPhone 13", share: 0.03 }
+      ],
+      ios: [
+        { name: "iPhone 15", share: 0.28 },
+        { name: "iPhone 14", share: 0.20 },
+        { name: "iPhone 16", share: 0.18 },
+        { name: "iPhone 13", share: 0.14 },
+        { name: "iPhone 12", share: 0.10 },
+        { name: "iPhone 11", share: 0.06 },
+        { name: "iPhone SE", share: 0.04 }
+      ],
+      android: [
+        { name: "华为 Mate", share: 0.24 },
+        { name: "小米 14", share: 0.20 },
+        { name: "OPPO / vivo", share: 0.18 },
+        { name: "荣耀", share: 0.14 },
+        { name: "Redmi", share: 0.10 },
+        { name: "三星", share: 0.08 },
+        { name: "一加", share: 0.06 }
+      ]
+    };
+    const PIE_VERSION = {
+      all: [
+        { name: "1.2.01", share: 0.32 },
+        { name: "1.1.20", share: 0.21 },
+        { name: "1.1.12", share: 0.15 },
+        { name: "1.1.08", share: 0.11 },
+        { name: "1.1.01", share: 0.09 },
+        { name: "1.0.30", share: 0.06 },
+        { name: "1.0.12", share: 0.04 },
+        { name: "1.0.01", share: 0.02 }
+      ],
+      ios: [
+        { name: "1.2.01", share: 0.42 },
+        { name: "1.1.20", share: 0.24 },
+        { name: "1.1.12", share: 0.14 },
+        { name: "1.1.08", share: 0.08 },
+        { name: "1.1.01", share: 0.06 },
+        { name: "1.0.30", share: 0.03 },
+        { name: "1.0.12", share: 0.02 },
+        { name: "1.0.01", share: 0.01 }
+      ],
+      android: [
+        { name: "1.2.01", share: 0.26 },
+        { name: "1.1.20", share: 0.20 },
+        { name: "1.1.12", share: 0.16 },
+        { name: "1.1.08", share: 0.13 },
+        { name: "1.1.01", share: 0.10 },
+        { name: "1.0.30", share: 0.08 },
+        { name: "1.0.12", share: 0.05 },
+        { name: "1.0.01", share: 0.02 }
+      ]
+    };
+    function pieTopNWithOther(items, n = 5) {
+      if (!items || items.length <= n) return (items || []).map(it => ({ ...it }));
+      const ranked = [...items].sort((a, b) => b.share - a.share);
+      const top = ranked.slice(0, n);
+      const otherShare = ranked.slice(n).reduce((s, it) => s + it.share, 0);
+      return top.concat({ name: "其他", share: otherShare });
+    }
+    const PIE_SKU = {
+      all: [
+        { name: "H6199 灯带", share: 0.24 },
+        { name: "H6008 灯泡", share: 0.18 },
+        { name: "H7142 加湿器", share: 0.14 },
+        { name: "H6076 落地灯", share: 0.12 },
+        { name: "H7131 暖风机", share: 0.10 },
+        { name: "H6039 台灯", share: 0.08 },
+        { name: "H7126 空气净化器", share: 0.08 },
+        { name: "H70B1 灯串", share: 0.06 }
+      ],
+      light: [
+        { name: "H6199 灯带", share: 0.30 },
+        { name: "H6008 灯泡", share: 0.22 },
+        { name: "H6076 落地灯", share: 0.16 },
+        { name: "H6039 台灯", share: 0.12 },
+        { name: "H70B1 灯串", share: 0.08 },
+        { name: "H6052 壁灯", share: 0.07 },
+        { name: "H6061 吸顶灯", share: 0.05 }
+      ],
+      appliance: [
+        { name: "H7142 加湿器", share: 0.28 },
+        { name: "H7131 暖风机", share: 0.22 },
+        { name: "H7126 空气净化器", share: 0.16 },
+        { name: "H7171 电热水壶", share: 0.12 },
+        { name: "H5080 智能插座", share: 0.08 },
+        { name: "H7141 加湿器", share: 0.08 },
+        { name: "H7160 制冰机", share: 0.06 }
+      ]
+    };
+    const PIE_CAT_RATIO = {
+      model: { all: 1, ios: 0.38, android: 0.62 },
+      version: { all: 1, ios: 0.38, android: 0.62 },
+      sku: { all: 1, light: 0.72, appliance: 0.28 }
+    };
+    function pieData(kind) {
+      const cat = pieCat[kind];
+      const raw = kind === "model" ? PIE_MODEL[cat] : kind === "version" ? PIE_VERSION[cat] : PIE_SKU[cat];
+      return pieTopNWithOther(raw || [], 5);
+    }
+    function pieTotal(kind) {
+      const days = sliceSec("dist");
+      if (!days.length) return 0;
+      const cur = aggregate(days);
+      const base = kind === "sku" ? cur.cum_activated : cur.cum_users;
+      const ratio = (PIE_CAT_RATIO[kind] || {})[pieCat[kind]] || 1;
+      return Math.round(base * ratio);
+    }
+    function pieWithCounts(items, total) {
+      let used = 0;
+      return items.map((it, i) => {
+        const count = i === items.length - 1
+          ? Math.max(0, total - used)
+          : Math.round(total * it.share);
+        used += count;
+        return { ...it, count };
+      });
+    }
+
+    function daySpan(from, to) {
+      const a = new Date(from + "T00:00:00");
+      const b = new Date(to + "T00:00:00");
+      return Math.round((b - a) / 86400000) + 1;
+    }
+    function sliceSec(id) {
+      const r = secRange[id];
+      return dashDaily.filter(d => d.date >= r.from && d.date <= r.to);
+    }
+    function prevSec(id) {
+      const r = secRange[id];
+      const len = daySpan(r.from, r.to);
+      const end = ymdAdd(r.from, -1);
+      const start = ymdAdd(end, 1 - len);
+      return dashDaily.filter(d => d.date >= start && d.date <= end);
+    }
+    function formatSecRange(r) {
+      return r.from === r.to ? slashDate(r.from) : `${slashDate(r.from)} – ${slashDate(r.to)}`;
+    }
+    function renderSecNav() {
+      SEC_IDS.forEach(id => {
+        const r = secRange[id];
+        const label = document.querySelector(`[data-sec-label="${id}"]`);
+        if (label) label.textContent = formatSecRange(r);
+        document.querySelectorAll(`[data-sec-shift="${id}"]`).forEach(btn => {
+          const dir = Number(btn.dataset.dir);
+          btn.disabled = dir < 0 ? r.from <= DASH_FIRST : r.to >= DASH_LATEST;
+        });
+      });
+    }
+    function shiftSec(id, dir) {
+      const r = secRange[id];
+      const len = daySpan(r.from, r.to);
+      let from = ymdAdd(r.from, dir * len);
+      let to = ymdAdd(r.to, dir * len);
+      if (to > DASH_LATEST) {
+        to = DASH_LATEST;
+        from = ymdAdd(to, 1 - len);
+      }
+      if (from < DASH_FIRST) {
+        from = DASH_FIRST;
+        to = ymdAdd(from, len - 1);
+        if (to > DASH_LATEST) to = DASH_LATEST;
+      }
+      if (from === r.from && to === r.to) return;
+      secRange[id] = { from, to };
+      renderDashboard();
+    }
+
+    const RP_PRESETS = [
+      ["yesterday", "昨日"], ["day_before", "前日"],
+      ["this_week", "本周"], ["last_week", "上周"],
+      ["this_month", "本月"], ["last_month", "上月"],
+      ["last_7", "过去7天"], ["last_30", "过去30天"],
+      ["last_90", "过去90天"], ["ytd", "今年至今"]
+    ];
+    let pickerSec = null;
+    let pickerDraft = { from: null, to: null };
+    let pickerPicking = false;
+    let pickerMonth = { y: 2026, m: 7 };
+
+    function toYmd(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+    function clampRange(from, to) {
+      if (from > to) { const t = from; from = to; to = t; }
+      if (from < DASH_FIRST) from = DASH_FIRST;
+      if (to > DASH_LATEST) to = DASH_LATEST;
+      if (from > to) from = to;
+      return { from, to };
+    }
+    function weekStartMon(ymd) {
+      const d = new Date(ymd + "T00:00:00");
+      const back = d.getDay() === 0 ? 6 : d.getDay() - 1;
+      return ymdAdd(ymd, -back);
+    }
+    function presetRange(id) {
+      const end = DASH_LATEST;
+      if (id === "yesterday") return clampRange(end, end);
+      if (id === "day_before") { const d = ymdAdd(end, -1); return clampRange(d, d); }
+      if (id === "last_7") return clampRange(ymdAdd(end, -6), end);
+      if (id === "last_30") return clampRange(ymdAdd(end, -29), end);
+      if (id === "last_90") return clampRange(ymdAdd(end, -89), end);
+      if (id === "ytd") return clampRange(`${end.slice(0, 4)}-01-01`, end);
+      if (id === "this_week") return clampRange(weekStartMon(end), end);
+      if (id === "last_week") {
+        const thisStart = weekStartMon(end);
+        return clampRange(ymdAdd(thisStart, -7), ymdAdd(thisStart, -1));
+      }
+      if (id === "this_month") return clampRange(`${end.slice(0, 7)}-01`, end);
+      if (id === "last_month") {
+        const d = new Date(end + "T00:00:00");
+        d.setDate(1);
+        d.setMonth(d.getMonth() - 1);
+        const from = toYmd(d);
+        const last = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+        return clampRange(from, toYmd(last));
+      }
+      return clampRange(end, end);
+    }
+    function closeRangePicker() {
+      const el = document.getElementById("rangePicker");
+      if (el) el.hidden = true;
+      pickerSec = null;
+    }
+    function applyPickerRange(from, to) {
+      if (!pickerSec) return;
+      if (isDayPickerSec(pickerSec)) from = to = to || from;
+      secRange[pickerSec] = clampRange(from, to);
+      closeRangePicker();
+      renderDashboard();
+    }
+    function rpCellClass(ymd, inMonth) {
+      const { from, to } = pickerDraft;
+      const cls = ["rp-day"];
+      if (!inMonth) cls.push("is-out");
+      if (ymd < DASH_FIRST || ymd > DASH_LATEST) cls.push("is-disabled");
+      if (isDayPickerSec(pickerSec)) {
+        if (ymd === from || ymd === to) cls.push("is-start", "is-end", "is-same");
+        return cls.join(" ");
+      }
+      if (from && ymd === from) cls.push("is-start");
+      if (to && ymd === to) cls.push("is-end");
+      if (from && to && ymd > from && ymd < to) cls.push("is-in");
+      if (from && (!to || from === to) && ymd === from) cls.push("is-same");
+      return cls.join(" ");
+    }
+    function renderRpMonth(el, y, m) {
+      const first = new Date(y, m, 1);
+      const cursor = new Date(y, m, 1 - first.getDay());
+      const title = `${y}年 ${String(m + 1).padStart(2, "0")}月`;
+      const heads = ["日", "一", "二", "三", "四", "五", "六"].map(d => `<span class="rp-dow">${d}</span>`).join("");
+      const cells = [];
+      for (let i = 0; i < 42; i++) {
+        const ymd = toYmd(cursor);
+        const inMonth = cursor.getMonth() === m;
+        cells.push(`<button type="button" class="${rpCellClass(ymd, inMonth)}" data-rp-day="${ymd}" ${ymd < DASH_FIRST || ymd > DASH_LATEST ? "disabled" : ""}>${cursor.getDate()}</button>`);
+        cursor.setDate(cursor.getDate() + 1);
+      }
+      el.innerHTML = `<div class="rp-month-title">${title}</div><div class="rp-grid">${heads}${cells.join("")}</div>`;
+    }
+    function renderRangePicker() {
+      const el = document.getElementById("rangePicker");
+      if (!el) return;
+      el.classList.toggle("is-single-day", isDayPickerSec(pickerSec));
+      const presets = document.getElementById("rpPresets");
+      if (presets && !presets.dataset.ready) {
+        presets.innerHTML = RP_PRESETS.map(([id, label]) =>
+          `<button type="button" class="rp-preset" data-rp-preset="${id}">${label}</button>`
+        ).join("");
+        presets.dataset.ready = "1";
+      }
+      const y = pickerMonth.y, m = pickerMonth.m;
+      const n = m === 11 ? { y: y + 1, m: 0 } : { y, m: m + 1 };
+      renderRpMonth(document.getElementById("rpMonth0"), y, m);
+      renderRpMonth(document.getElementById("rpMonth1"), n.y, n.m);
+    }
+    function openRangePicker(secId, anchor) {
+      pickerSec = secId;
+      const r = secRange[secId];
+      pickerDraft = isDayPickerSec(secId)
+        ? { from: r.from, to: r.from }
+        : { from: r.from, to: r.to };
+      pickerPicking = false;
+      const toD = new Date(r.to + "T00:00:00");
+      pickerMonth = { y: toD.getFullYear(), m: toD.getMonth() - 1 };
+      if (pickerMonth.m < 0) { pickerMonth.m += 12; pickerMonth.y -= 1; }
+      renderRangePicker();
+      const el = document.getElementById("rangePicker");
+      el.hidden = false;
+      const box = anchor.getBoundingClientRect();
+      const pw = el.offsetWidth || 640;
+      const ph = el.offsetHeight || 360;
+      let left = box.left;
+      let top = box.bottom + 6;
+      if (left + pw > window.innerWidth - 12) left = window.innerWidth - pw - 12;
+      if (left < 12) left = 12;
+      if (top + ph > window.innerHeight - 12 && box.top - ph - 6 > 12) top = box.top - ph - 6;
+      el.style.left = left + "px";
+      el.style.top = top + "px";
+    }
+
+    function aggregate(days) {
+      if (!days.length) return null;
+      const last = days[days.length - 1];
+      const sum = (k) => days.reduce((s, d) => s + d[k], 0);
+      const single = days.length === 1;
+      const paired = sum("paired");
+      const newUsers = sum("new_users");
+      const opens = sum("opens");
+      const pv = sum("pv");
+      const uv = single ? last.dau : Math.round(Math.max(...days.map(d => d.dau)) * (days.length <= 7 ? 1.85 : 2.55));
+      return {
+        new_users: newUsers,
+        cum_users: last.cum_users,
+        dau: single ? last.dau : Math.round(sum("dau") / days.length),
+        dau_avg: !single,
+        paired,
+        pair_rate: newUsers ? paired / newUsers : null,
+        new_activated: sum("new_activated"),
+        cum_activated: last.cum_activated,
+        active_devices: single ? last.active_devices : Math.round(Math.max(...days.map(d => d.active_devices)) * (days.length === 7 ? 1.12 : 1.28)),
+        active_range: !single,
+        online_rate: last.cum_activated ? last.online_devices / last.cum_activated : null,
+        opens,
+        opens_new: sum("opens_new"),
+        pv,
+        pages_per_user: uv ? pv / uv : null,
+        depth: opens ? pv / opens : null,
+        churned: last.churned,
+        returned: single ? last.returned : sum("returned"),
+        ret_active_d1: last.ret_active_d1,
+        ret_active_d7: last.ret_active_d7,
+        ret_active_d30: last.ret_active_d30,
+        ret_new_d1: last.ret_new_d1,
+        ret_new_d7: last.ret_new_d7,
+        ret_new_d30: last.ret_new_d30,
+        last
+      };
+    }
+
+    function kpiHtml({ label, tipKey, kpiKey, value, note, compares }) {
+      return `<div class="kpi-card" data-kpi-key="${kpiKey}">
+        <div class="label-row">
+          <div class="label">${label}</div>
+          <button type="button" class="metric-tip" data-tip="${tipKey}" aria-label="${label}说明">?</button>
+        </div>
+        <div class="value${value === "—" ? " is-empty" : ""}">${value}</div>
+        ${note ? `<div class="sub">${note}</div>` : ""}
+        <div class="kpi-cmp">${(compares || []).map(([name, cell]) =>
+          `<div class="kpi-delta ${cell.cls}"><span>${name}</span><strong>${cell.text}</strong></div>`
+        ).join("")}</div>
+      </div>`;
+    }
+
+    let kpiHoverCtx = null;
+    function hideKpiHover() {
+      const pop = document.getElementById("kpiHover");
+      if (pop) pop.hidden = true;
+    }
+    function aggRange(from, to) {
+      const days = dashDaily.filter(d => d.date >= from && d.date <= to);
+      return days.length ? aggregate(days) : null;
+    }
+    function prevEqualRange(from, to) {
+      const len = daySpan(from, to);
+      const end = ymdAdd(from, -1);
+      return { from: ymdAdd(end, 1 - len), to: end };
+    }
+    function fmtHoverMain(key, v) {
+      if (v == null || Number.isNaN(v)) return "—";
+      if (key === "pair_rate" || key === "online_rate") return fmtPct(v);
+      if (key === "pages_per_user") return `${Number(v).toFixed(2)} <small>页</small>`;
+      if (key === "depth") return Number(v).toFixed(2);
+      return fmtNum(v);
+    }
+    function fmtCmpCell(curr, prev) {
+      const r = dod(curr, prev);
+      if (r == null) return { text: "-", cls: "flat" };
+      const sign = r > 0 ? "+" : "";
+      return { text: sign + (r * 100).toFixed(1) + "%", cls: deltaClass(r) };
+    }
+    function kpiCompareRows(key, cur, isSingle, from, to) {
+      const curr = cur ? cur[key] : null;
+      if (isSingle) {
+        return [
+          ["较昨日", ymdAdd(from, -1)],
+          ["较7日前", ymdAdd(from, -7)]
+        ].map(([name, day]) => {
+          const other = aggRange(day, day);
+          return [name, fmtCmpCell(curr, other ? other[key] : null)];
+        });
+      }
+      const mom = prevEqualRange(from, to);
+      const yoy = { from: ymdAddYear(from, -1), to: ymdAddYear(to, -1) };
+      const momAgg = aggRange(mom.from, mom.to);
+      const yoyAgg = aggRange(yoy.from, yoy.to);
+      return [
+        ["环比区间", fmtCmpCell(curr, momAgg ? momAgg[key] : null)],
+        ["同比区间", fmtCmpCell(curr, yoyAgg ? yoyAgg[key] : null)]
+      ];
+    }
+    function showKpiHover(card) {
+      const pop = document.getElementById("kpiHover");
+      if (!pop || !kpiHoverCtx) return;
+      hideTip();
+      const key = card.dataset.kpiKey;
+      const { isSingle, from, to, cur } = kpiHoverCtx;
+      const curr = cur ? cur[key] : null;
+      const label = card.querySelector(".label")?.textContent || "";
+      const compares = kpiCompareRows(key, cur, isSingle, from, to);
+      pop.innerHTML = `<div class="kpi-hover-name">${label}</div>
+        <div class="kpi-hover-value">${fmtHoverMain(key, curr)}</div>
+        <div class="kpi-hover-rows">${compares.map(([name, cell]) =>
+          `<div class="kpi-hover-row"><span>${name}</span><strong class="${cell.cls}">${cell.text}</strong></div>`
+        ).join("")}</div>`;
+      pop.hidden = false;
+      const r = card.getBoundingClientRect();
+      const pad = 8;
+      let left = r.left;
+      let top = r.bottom + pad;
+      const pw = pop.offsetWidth;
+      const ph = pop.offsetHeight;
+      if (left + pw > window.innerWidth - 12) left = window.innerWidth - pw - 12;
+      if (left < 12) left = 12;
+      if (top + ph > window.innerHeight - 12 && r.top - ph - pad > 12) top = r.top - ph - pad;
+      pop.style.left = left + "px";
+      pop.style.top = top + "px";
+    }
+    function bindKpiHover() {
+      document.querySelectorAll("#page-core .kpi-card[data-kpi-key]").forEach(card => {
+        card.addEventListener("mouseenter", () => showKpiHover(card));
+        card.addEventListener("mouseleave", hideKpiHover);
+        const tip = card.querySelector(".metric-tip");
+        if (tip) {
+          tip.addEventListener("mouseenter", hideKpiHover);
+          tip.addEventListener("mouseleave", (e) => {
+            if (card.contains(e.relatedTarget)) showKpiHover(card);
+          });
+        }
+      });
+    }
+
+    function hideTip() {
+      const pop = document.getElementById("tipPop");
+      if (pop) pop.hidden = true;
+      if (openTipEl) openTipEl.classList.remove("is-open");
+      openTipEl = null;
+    }
+    function showTip(anchor) {
+      hideKpiHover();
+      const pop = document.getElementById("tipPop");
+      if (!pop) return;
+      const text = METRIC_TIPS[anchor.dataset.tip] || "";
+      if (!text) return;
+      if (openTipEl === anchor) { hideTip(); return; }
+      hideTip();
+      pop.textContent = text;
+      pop.hidden = false;
+      openTipEl = anchor;
+      anchor.classList.add("is-open");
+      const r = anchor.getBoundingClientRect();
+      const pad = 8;
+      let left = r.left;
+      let top = r.bottom + pad;
+      pop.classList.remove("is-above");
+      const pw = pop.offsetWidth;
+      const ph = pop.offsetHeight;
+      if (left + pw > window.innerWidth - 12) left = window.innerWidth - pw - 12;
+      if (left < 12) left = 12;
+      if (top + ph > window.innerHeight - 12 && r.top - ph - pad > 12) {
+        top = r.top - ph - pad;
+        pop.classList.add("is-above");
+      }
+      pop.style.left = left + "px";
+      pop.style.top = top + "px";
+    }
+
+    function slashDate(ymd) {
+      return ymd.replace(/-/g, "/");
+    }
+    function weekdayLabel(ymd) {
+      const d = new Date(ymd + "T00:00:00");
+      return `${WEEKDAY[d.getDay()]} ${slashDate(ymd)}`;
+    }
+    function chartTimeTickSet(n, xAt, minGap = 100) {
+      const show = new Set();
+      if (n <= 0) return show;
+      show.add(0);
+      let last = 0;
+      for (let i = 1; i < n; i++) {
+        if (xAt(i) - xAt(last) >= minGap) {
+          show.add(i);
+          last = i;
+        }
+      }
+      const end = n - 1;
+      if (end > 0 && !show.has(end) && xAt(end) - xAt(last) >= minGap * 0.8) show.add(end);
+      return show;
+    }
+    function fmtMean(values, isRet) {
+      const nums = values.filter(v => v != null);
+      if (!nums.length) return "—";
+      const m = nums.reduce((a, b) => a + b, 0) / nums.length;
+      return isRet ? m.toFixed(2) : fmtNum(Math.round(m));
+    }
+    function yTickLabel(v, isRet) {
+      if (isRet) return v.toFixed(2);
+      if (v >= 10000) return Math.round(v / 10000) + "万";
+      return fmtNum(Math.round(v));
+    }
+
+    function chartBoxWidth(svg) {
+      const w = svg ? Math.round(svg.getBoundingClientRect().width) : 0;
+      return w > 40 ? w : 720;
+    }
+    const chartHits = new WeakMap();
+    function hideChartHover(svg) {
+      if (!svg) return;
+      const g = svg.querySelector(".chart-hover");
+      if (g) g.innerHTML = "";
+      const tip = svg.closest(".chart-hover-wrap")?.querySelector(".chart-tip");
+      if (tip) tip.hidden = true;
+    }
+    function showChartHover(svg, hit, idx) {
+      const wrap = svg.closest(".chart-hover-wrap");
+      const tip = wrap?.querySelector(".chart-tip");
+      if (!wrap || !tip) return;
+      const cx = hit.xAt(idx);
+      let g = svg.querySelector(".chart-hover");
+      if (!g) {
+        g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        g.setAttribute("class", "chart-hover");
+        svg.appendChild(g);
+      }
+      const dots = hit.series.map(s => {
+        const raw = s.values[idx];
+        const cy = hit.yAt(raw == null ? 0 : raw);
+        return `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="4" fill="${s.color}" stroke="#fff" stroke-width="1.5" />`;
+      }).join("");
+      g.innerHTML = `<line class="chart-cross" x1="${cx.toFixed(1)}" x2="${cx.toFixed(1)}" y1="${hit.top}" y2="${hit.baseY}" />${dots}`;
+      tip.innerHTML = `<div class="chart-tip-date">${weekdayLabel(hit.dates[idx])}</div>` + hit.series.map(s => {
+        const raw = s.values[idx];
+        const val = s.format ? s.format(raw) : fmtNum(raw);
+        return `<div class="chart-tip-row"><i style="background:${s.color}"></i><span>${s.label}</span><strong>${val}</strong></div>`;
+      }).join("");
+      tip.hidden = false;
+      const rect = svg.getBoundingClientRect();
+      const wr = wrap.getBoundingClientRect();
+      const px = rect.left + (cx / hit.w) * rect.width - wr.left;
+      const first = hit.series[0];
+      const py = rect.top + (hit.yAt(first.values[idx] == null ? 0 : first.values[idx]) / hit.h) * rect.height - wr.top;
+      tip.style.left = `${px + 12}px`;
+      tip.style.top = `${Math.max(4, py - 12)}px`;
+      const tr = tip.getBoundingClientRect();
+      if (tr.right > wr.right - 8) tip.style.left = `${Math.max(4, px - tr.width - 12)}px`;
+      if (tr.bottom > wr.bottom - 4) tip.style.top = `${Math.max(4, py - tr.height - 8)}px`;
+    }
+    function bindChartHover(svg) {
+      if (!svg || svg.dataset.hoverBound) return;
+      svg.dataset.hoverBound = "1";
+      svg.addEventListener("pointermove", (e) => {
+        const hit = chartHits.get(svg);
+        if (!hit || !hit.dates.length) return;
+        const rect = svg.getBoundingClientRect();
+        const sx = (e.clientX - rect.left) * (hit.w / rect.width);
+        if (sx < hit.left - 12 || sx > hit.w - hit.right + 12) {
+          hideChartHover(svg);
+          return;
+        }
+        let idx = 0, best = Infinity;
+        for (let i = 0; i < hit.dates.length; i++) {
+          const d = Math.abs(hit.xAt(i) - sx);
+          if (d < best) { best = d; idx = i; }
+        }
+        showChartHover(svg, hit, idx);
+      });
+      svg.addEventListener("pointerleave", () => hideChartHover(svg));
+    }
+    function drawRetBars(svg, dates, activeVals, newVals) {
+      if (!svg || !dates.length) return;
+      hideChartHover(svg);
+      const h = 256, left = 52, right = 16, top = 24, bottom = 44;
+      const w = chartBoxWidth(svg);
+      svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+      svg.setAttribute("preserveAspectRatio", "none");
+      const max = Math.max(0.05, ...activeVals.filter(v => v != null), ...newVals.filter(v => v != null)) * 1.18;
+      const plotH = h - top - bottom;
+      const y = (v) => top + (1 - (v || 0) / max) * plotH;
+      const n = dates.length;
+      const slot = (w - left - right) / n;
+      const barW = Math.max(4, Math.min(16, slot * 0.28));
+      const gap = Math.min(4, Math.max(2, slot * 0.08));
+      const ticks = [0, 0.5, 1].map(t => t * max);
+      const baseY = top + plotH;
+      const grid = ticks.map(tv => {
+        const gy = y(tv);
+        return `<line class="grid" x1="${left}" x2="${w - right}" y1="${gy.toFixed(1)}" y2="${gy.toFixed(1)}" />
+          <text class="chart-label" x="${left - 8}" y="${gy + 4}" text-anchor="end">${(tv * 100).toFixed(1)}%</text>`;
+      }).join("");
+      const showPct = n <= 10;
+      const xAt = (i) => left + slot * i + slot / 2;
+      const tickSet = chartTimeTickSet(n, xAt);
+      const bars = dates.map((d, i) => {
+        const cx = xAt(i);
+        const x1 = cx - gap / 2 - barW;
+        const x2 = cx + gap / 2;
+        const a = activeVals[i] == null ? 0 : activeVals[i];
+        const b = newVals[i] == null ? 0 : newVals[i];
+        const y1 = y(a), y2 = y(b);
+        const h1 = Math.max(1, top + plotH - y1);
+        const h2 = Math.max(1, top + plotH - y2);
+        const l1 = showPct ? `<text class="chart-label" x="${(x1 + barW / 2).toFixed(1)}" y="${(y1 - 4).toFixed(1)}" text-anchor="middle">${fmtPct(activeVals[i])}</text>` : "";
+        const l2 = showPct ? `<text class="chart-label" x="${(x2 + barW / 2).toFixed(1)}" y="${(y2 - 4).toFixed(1)}" text-anchor="middle">${fmtPct(newVals[i])}</text>` : "";
+        const dateTxt = tickSet.has(i)
+          ? `<line class="chart-xtick" x1="${cx.toFixed(1)}" x2="${cx.toFixed(1)}" y1="${baseY}" y2="${baseY + 4}" />
+             <text class="chart-x-label" x="${cx.toFixed(1)}" y="${h - 10}" text-anchor="middle">${weekdayLabel(d)}</text>`
+          : "";
+        return `<rect x="${x1.toFixed(1)}" y="${y1.toFixed(1)}" width="${barW}" height="${h1.toFixed(1)}" rx="2" fill="#0087FF" />
+          <rect x="${x2.toFixed(1)}" y="${y2.toFixed(1)}" width="${barW}" height="${h2.toFixed(1)}" rx="2" fill="#FAA700" />
+          ${l1}${l2}${dateTxt}`;
+      }).join("");
+      svg.innerHTML = `<line class="grid" x1="${left}" x2="${w - right}" y1="${baseY}" y2="${baseY}" />` + grid + bars;
+      chartHits.set(svg, {
+        dates, w, h, left, right, top, baseY,
+        xAt, yAt: y,
+        series: [
+          { label: "活跃日留存", color: "#0087FF", values: activeVals, format: fmtPct },
+          { label: "新增日留存", color: "#FAA700", values: newVals, format: fmtPct }
+        ]
+      });
+    }
+
+    function smoothPath(pts) {
+      if (pts.length < 2) return "";
+      let d = `M ${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+      for (let i = 0; i < pts.length - 1; i++) {
+        const p0 = pts[Math.max(0, i - 1)];
+        const p1 = pts[i];
+        const p2 = pts[i + 1];
+        const p3 = pts[Math.min(pts.length - 1, i + 2)];
+        const c1x = p1[0] + (p2[0] - p0[0]) / 6;
+        const c1y = p1[1] + (p2[1] - p0[1]) / 6;
+        const c2x = p2[0] - (p3[0] - p1[0]) / 6;
+        const c2y = p2[1] - (p3[1] - p1[1]) / 6;
+        d += ` C ${c1x.toFixed(1)} ${c1y.toFixed(1)} ${c2x.toFixed(1)} ${c2y.toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+      }
+      return d;
+    }
+
+    function drawCurves(svg, dates, series) {
+      if (!svg || !dates.length) return;
+      hideChartHover(svg);
+      const h = 268, left = 56, right = 16, top = 12, bottom = 44;
+      const w = chartBoxWidth(svg);
+      svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+      svg.setAttribute("preserveAspectRatio", "none");
+      const vals = series.flatMap(s => s.values.filter(v => v != null));
+      if (!vals.length) {
+        svg.innerHTML = `<text class="chart-label" x="${w / 2}" y="${h / 2}" text-anchor="middle">请选择指标</text>`;
+        chartHits.delete(svg);
+        return;
+      }
+      const max = Math.max(...vals, 1) * 1.08;
+      const min = 0;
+      const span = max - min || 1;
+      const x = (i) => left + (i / Math.max(dates.length - 1, 1)) * (w - left - right);
+      const y = (v) => top + (1 - (v - min) / span) * (h - top - bottom);
+      const ticks = [0, 0.5, 1].map(t => min + t * span);
+      const baseY = top + (h - top - bottom);
+      const grid = ticks.map(tv => {
+        const gy = y(tv);
+        return `<line class="grid" x1="${left}" x2="${w - right}" y1="${gy.toFixed(1)}" y2="${gy.toFixed(1)}" />
+          <text class="chart-label" x="${left - 8}" y="${gy + 4}" text-anchor="end">${yTickLabel(tv, false)}</text>`;
+      }).join("");
+      const paths = series.map(s => {
+        const pts = s.values.map((v, i) => [x(i), y(v == null ? 0 : v)]);
+        return `<path d="${smoothPath(pts)}" fill="none" stroke="${s.color}" stroke-width="2" />`;
+      }).join("");
+      const n = dates.length;
+      const tickSet = chartTimeTickSet(n, x);
+      const axis = dates.map((d, i) => {
+        if (!tickSet.has(i)) return "";
+        const cx = x(i).toFixed(1);
+        return `<line class="chart-xtick" x1="${cx}" x2="${cx}" y1="${baseY}" y2="${baseY + 4}" />
+          <text class="chart-x-label" x="${cx}" y="${h - 10}" text-anchor="middle">${weekdayLabel(d)}</text>`;
+      }).join("");
+      svg.innerHTML = `<line class="grid" x1="${left}" x2="${w - right}" y1="${baseY}" y2="${baseY}" />` + grid + paths + axis;
+      chartHits.set(svg, { dates, w, h, left, right, top, baseY, xAt: x, yAt: y, series });
+    }
+
+    function pieTimeLabel() {
+      const r = secRange.dist;
+      return r.from === r.to ? weekdayLabel(r.from) : formatSecRange(r);
+    }
+    const pieHits = new WeakMap();
+    function hidePieHover(wrap) {
+      if (!wrap) return;
+      const tip = wrap.querySelector(".pie-tip");
+      if (tip) tip.hidden = true;
+      wrap.querySelectorAll(".pie-slice, .pie-legend-row").forEach(n => n.classList.remove("is-hot"));
+      wrap.querySelector("svg.os-donut")?.classList.remove("is-hovering");
+    }
+    function pieIndexAt(wrap, hit, e) {
+      const row = e.target.closest("[data-pie-i]");
+      if (row && wrap.contains(row)) return Number(row.dataset.pieI);
+      const svg = hit.el.querySelector("svg.os-donut");
+      if (!svg) return -1;
+      const rect = svg.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = e.clientX - cx;
+      const dy = e.clientY - cy;
+      const dist = Math.hypot(dx, dy);
+      const half = rect.width / 2;
+      const outer = half * (50 / 60);
+      const inner = half * (34 / 60);
+      if (dist < inner - 4 || dist > outer + 6) return -1;
+      let ang = Math.atan2(dy, dx) * 180 / Math.PI;
+      ang = (ang + 90 + 360) % 360;
+      let acc = 0;
+      for (let i = 0; i < hit.items.length; i++) {
+        acc += hit.items[i].share * 360;
+        if (ang <= acc + 0.4) return i;
+      }
+      return hit.items.length - 1;
+    }
+    function showPieHover(wrap, hit, idx, e) {
+      const tip = wrap.querySelector(".pie-tip");
+      const it = hit.items[idx];
+      if (!tip || !it) return;
+      wrap.querySelector("svg.os-donut")?.classList.add("is-hovering");
+      wrap.querySelectorAll(".pie-slice").forEach((n, i) => n.classList.toggle("is-hot", i === idx));
+      wrap.querySelectorAll(".pie-legend-row").forEach((n, i) => n.classList.toggle("is-hot", i === idx));
+      const color = PIE_COLORS[idx % PIE_COLORS.length];
+      tip.innerHTML = `<div class="chart-tip-date">${pieTimeLabel()}</div>
+        <div class="pie-tip-item"><i style="background:${color}"></i>${it.name}</div>
+        <div class="chart-tip-row"><span>数量</span><strong>${fmtNum(it.count)}</strong></div>
+        <div class="chart-tip-row"><span>占比</span><strong>${fmtPct(it.share)}</strong></div>`;
+      tip.hidden = false;
+      const wr = wrap.getBoundingClientRect();
+      let left = e.clientX - wr.left + 12;
+      let top = e.clientY - wr.top + 12;
+      tip.style.left = left + "px";
+      tip.style.top = top + "px";
+      const tr = tip.getBoundingClientRect();
+      if (tr.right > wr.right - 8) tip.style.left = Math.max(4, left - tr.width - 24) + "px";
+      if (tr.bottom > wr.bottom - 4) tip.style.top = Math.max(4, top - tr.height - 24) + "px";
+    }
+    function bindPieHover(el, items) {
+      const wrap = el.closest(".pie-hover-wrap");
+      if (!wrap) return;
+      pieHits.set(wrap, { el, items });
+      if (wrap.dataset.pieHoverBound) return;
+      wrap.dataset.pieHoverBound = "1";
+      wrap.addEventListener("pointermove", (e) => {
+        const hit = pieHits.get(wrap);
+        if (!hit) return;
+        const idx = pieIndexAt(wrap, hit, e);
+        if (idx < 0) { hidePieHover(wrap); return; }
+        showPieHover(wrap, hit, idx, e);
+      });
+      wrap.addEventListener("pointerleave", () => hidePieHover(wrap));
+    }
+    function renderPie(el, kind) {
+      if (!el) return;
+      const items = pieWithCounts(pieData(kind), pieTotal(kind));
+      const r = 42, c = 2 * Math.PI * r;
+      let offset = 0;
+      const circles = items.map((it, i) => {
+        const len = it.share * c;
+        const html = `<circle class="pie-slice" cx="60" cy="60" r="${r}" fill="none" stroke="${PIE_COLORS[i % PIE_COLORS.length]}" stroke-width="16"
+          stroke-dasharray="${len} ${c - len}" stroke-dashoffset="${-offset}" transform="rotate(-90 60 60)" />`;
+        offset += len;
+        return html;
+      }).join("");
+      el.innerHTML = `
+        <svg class="os-donut" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="${r}" fill="none" stroke="#E8EDF6" stroke-width="16" />
+          ${circles}
+        </svg>
+        <div class="pie-legend">
+          ${items.map((it, i) => `<div class="pie-legend-row" data-pie-i="${i}">
+            <span><span class="os-dot" style="background:${PIE_COLORS[i % PIE_COLORS.length]}"></span>${it.name}</span>
+            <em class="pie-count">${fmtNum(it.count)}</em>
+            <strong class="pie-share">${fmtPct(it.share)}</strong>
+          </div>`).join("")}
+        </div>`;
+      bindPieHover(el, items);
+    }
+
+    function coreChipDef(id) {
+      return CORE_CHIPS.find(c => c.id === id);
+    }
+    function metricValue(day, def) {
+      if (!def) return null;
+      if (def.kind === "ret") return day[`${def.id}_${retWin}`];
+      return day[def.id];
+    }
+    function formatMetricValue(def, v) {
+      if (v == null) return "—";
+      return def.kind === "ret" ? fmtPct(v) : fmtNum(v);
+    }
+    function selectedCoreDefs() {
+      return coreMetrics.map(id => coreChipDef(id)).filter(Boolean);
+    }
+    function renderCoreChips() {
+      const el = document.getElementById("coreChips");
+      if (!el) return;
+      el.innerHTML = CORE_CHIPS.map(c => `
+        <button type="button" class="metric-chip${coreMetrics.includes(c.id) ? " active" : ""}" data-core-metric="${c.id}">
+          ${c.label}
+          <span class="metric-tip" data-tip="${c.tip}" aria-label="${c.label}说明">?</span>
+        </button>`).join("");
+    }
+    function syncRetWindowPills() {
+      document.querySelectorAll("[data-ret-win]").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.retWin === retWin);
+      });
+      document.querySelectorAll("[data-core-ret-win]").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.coreRetWin === retWin);
+      });
+    }
+    function syncPieCatPills() {
+      document.querySelectorAll("[data-pie-kind]").forEach(group => {
+        const kind = group.dataset.pieKind;
+        group.querySelectorAll("[data-pie-cat]").forEach(btn => {
+          btn.classList.toggle("active", btn.dataset.pieCat === pieCat[kind]);
+        });
+      });
+    }
+    function renderDistPies() {
+      syncPieCatPills();
+      renderPie(document.getElementById("pieModel"), "model");
+      renderPie(document.getElementById("pieVersion"), "version");
+      renderPie(document.getElementById("pieSku"), "sku");
+    }
+    function renderCoreTrend(chartDays) {
+      const defs = selectedCoreDefs();
+      const dates = chartDays.map(d => d.date);
+      renderCoreChips();
+      const legend = document.getElementById("coreLegend");
+      if (legend) {
+        legend.innerHTML = defs.map(def => {
+          const color = CORE_COLORS[CORE_CHIPS.findIndex(c => c.id === def.id) % CORE_COLORS.length];
+          return `<span><i class="os-dot" style="background:${color}"></i>${def.label}</span>`;
+        }).join("");
+      }
+      drawCurves(
+        document.getElementById("coreMainChart"),
+        dates,
+        defs.map(def => ({
+          label: def.label,
+          color: CORE_COLORS[CORE_CHIPS.findIndex(c => c.id === def.id) % CORE_COLORS.length],
+          values: chartDays.map(day => metricValue(day, def)),
+          format: v => fmtNum(v)
+        }))
+      );
+    }
+
+    function renderDashboard() {
+      const page = document.getElementById("page-core");
+      if (!page) return;
+      hideTip();
+      hideKpiHover();
+      renderSecNav();
+      syncRetWindowPills();
+
+      const days = sliceSec("overview");
+      if (!days.length) return;
+      const cur = aggregate(days);
+      const isSingle = days.length === 1;
+      const ov = secRange.overview;
+      kpiHoverCtx = { isSingle, from: ov.from, to: ov.to, cur };
+      const kpiItem = ({ label, tipKey, kpiKey, value }) => kpiHtml({
+        label, tipKey, kpiKey, value,
+        compares: kpiCompareRows(kpiKey, cur, isSingle, ov.from, ov.to)
+      });
+
+      document.getElementById("kpiUser").innerHTML = [
+        { label: "累计用户数", tipKey: "cum_users", kpiKey: "cum_users", value: fmtNum(cur.cum_users) },
+        { label: "新增用户数", tipKey: "new_users", kpiKey: "new_users", value: fmtNum(cur.new_users) },
+        { label: "新用户配网转化", tipKey: "pair_rate", kpiKey: "pair_rate", value: fmtPct(cur.pair_rate) },
+        { label: "活跃用户数", tipKey: "active_users", kpiKey: "dau", value: fmtNum(cur.dau) }
+      ].map(kpiItem).join("");
+
+      document.getElementById("kpiDevice").innerHTML = [
+        { label: "累计激活设备数", tipKey: "cum_activated", kpiKey: "cum_activated", value: fmtNum(cur.cum_activated) },
+        { label: "新增激活设备数", tipKey: "new_activated", kpiKey: "new_activated", value: fmtNum(cur.new_activated) },
+        { label: "活跃设备数", tipKey: "active_devices", kpiKey: "active_devices", value: fmtNum(cur.active_devices) },
+        { label: "在线率", tipKey: "online_rate", kpiKey: "online_rate", value: fmtPct(cur.online_rate) }
+      ].map(kpiItem).join("");
+
+      document.getElementById("kpiUsage").innerHTML = [
+        { label: "打开次数", tipKey: "opens", kpiKey: "opens", value: fmtNum(cur.opens) },
+        { label: "人均使用页面数", tipKey: "pages_per_user", kpiKey: "pages_per_user", value: cur.pages_per_user == null ? "—" : cur.pages_per_user.toFixed(2) },
+        { label: "使用深度", tipKey: "depth", kpiKey: "depth", value: cur.depth == null ? "—" : cur.depth.toFixed(2) }
+      ].map(kpiItem).join("");
+
+      document.getElementById("kpiChurn").innerHTML = [
+        { label: "流失用户数", tipKey: "churned", kpiKey: "churned", value: fmtNum(cur.churned) },
+        { label: "回流用户数", tipKey: "returned", kpiKey: "returned", value: fmtNum(cur.returned) }
+      ].map(kpiItem).join("");
+      bindKpiHover();
+
+      const retDays = sliceSec("ret");
+      const retDates = retDays.map(d => d.date);
+      drawRetBars(
+        document.getElementById("chartRet"),
+        retDates,
+        retDays.map(d => d[`ret_active_${retWin}`]),
+        retDays.map(d => d[`ret_new_${retWin}`])
+      );
+
+      renderDistPies();
+      renderCoreTrend(sliceSec("core"));
+    }
+
+    function normalizePage(page) {
+      if (page === "overview" || page === "users" || page === "devices") return "core";
+      return page;
+    }
+
+    function switchErpPage(page) {
+      page = normalizePage(page);
+      if (!PAGE_CRUMB[page]) page = "faq";
+      document.querySelectorAll(".page-view").forEach(el => {
+        el.classList.toggle("active", el.id === "page-" + page);
+      });
+      document.querySelectorAll(".nav-l2[data-page]").forEach(el => {
+        el.classList.toggle("active", el.dataset.page === page);
+      });
+      const [l1, l2] = PAGE_CRUMB[page];
+      document.querySelector(".breadcrumb").innerHTML =
+        `<a href="#${page === "faq" ? "faq" : "core"}">${l1}</a><span class="sep">/</span><span class="current">${l2}</span>`;
+      if (page === "core") renderDashboard();
+      const nextHash = "#" + page;
+      if (location.hash !== nextHash) history.replaceState(null, "", nextHash);
+    }
+
+    document.querySelectorAll(".nav-l2[data-page]").forEach(el => {
+      el.addEventListener("click", () => switchErpPage(el.dataset.page));
+      el.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          switchErpPage(el.dataset.page);
+        }
       });
     });
+    document.addEventListener("click", (e) => {
+      const tipBtn = e.target.closest(".metric-tip");
+      if (tipBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        showTip(tipBtn);
+        return;
+      }
+      if (!e.target.closest("#tipPop")) hideTip();
+      const chip = e.target.closest("[data-core-metric]");
+      if (chip) {
+        closeRangePicker();
+        const id = chip.dataset.coreMetric;
+        if (coreMetrics.includes(id)) {
+          coreMetrics = coreMetrics.filter(x => x !== id);
+        } else {
+          coreMetrics = coreMetrics.concat(id);
+        }
+        renderDashboard();
+        return;
+      }
+      const retPill = e.target.closest("[data-ret-win]");
+      if (retPill) {
+        closeRangePicker();
+        retWin = retPill.dataset.retWin;
+        renderDashboard();
+        return;
+      }
+      const pieCatBtn = e.target.closest("[data-pie-cat]");
+      if (pieCatBtn) {
+        closeRangePicker();
+        const kind = pieCatBtn.closest("[data-pie-kind]")?.dataset.pieKind;
+        if (kind) pieCat[kind] = pieCatBtn.dataset.pieCat;
+        renderDistPies();
+        return;
+      }
+      const labelBtn = e.target.closest("[data-sec-label]");
+      if (labelBtn) {
+        const el = document.getElementById("rangePicker");
+        if (pickerSec === labelBtn.dataset.secLabel && el && !el.hidden) closeRangePicker();
+        else openRangePicker(labelBtn.dataset.secLabel, labelBtn);
+        return;
+      }
+      if (!e.target.closest("#rangePicker")) closeRangePicker();
+      const preset = e.target.closest("[data-rp-preset]");
+      if (preset) {
+        if (isDayPickerSec(pickerSec)) return;
+        const r = presetRange(preset.dataset.rpPreset);
+        applyPickerRange(r.from, r.to);
+        return;
+      }
+      const dayBtn = e.target.closest("[data-rp-day]");
+      if (dayBtn && !dayBtn.disabled) {
+        const ymd = dayBtn.dataset.rpDay;
+        if (isDayPickerSec(pickerSec)) {
+          applyPickerRange(ymd, ymd);
+          return;
+        }
+        if (!pickerPicking) {
+          pickerDraft = { from: ymd, to: null };
+          pickerPicking = true;
+          renderRangePicker();
+        } else {
+          applyPickerRange(pickerDraft.from, ymd);
+        }
+        return;
+      }
+      if (e.target.closest("#rpPrev")) {
+        pickerMonth.m -= 1;
+        if (pickerMonth.m < 0) { pickerMonth.m = 11; pickerMonth.y -= 1; }
+        renderRangePicker();
+        return;
+      }
+      if (e.target.closest("#rpNext")) {
+        pickerMonth.m += 1;
+        if (pickerMonth.m > 11) { pickerMonth.m = 0; pickerMonth.y += 1; }
+        renderRangePicker();
+        return;
+      }
+      const nav = e.target.closest("[data-sec-shift]");
+      if (nav && !nav.disabled) {
+        shiftSec(nav.dataset.secShift, Number(nav.dataset.dir));
+      }
+    });
+    let chartResizeTimer = 0;
+    function onChartResize() {
+      clearTimeout(chartResizeTimer);
+      chartResizeTimer = setTimeout(() => {
+        if (document.getElementById("page-core")?.classList.contains("active")) renderDashboard();
+      }, 80);
+    }
+    ["chartRet", "coreMainChart"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && window.ResizeObserver) new ResizeObserver(onChartResize).observe(el);
+      bindChartHover(el);
+    });
+    window.addEventListener("resize", onChartResize);
+    window.addEventListener("scroll", () => { hideTip(); hideKpiHover(); }, true);
+    window.addEventListener("hashchange", () => {
+      const page = (location.hash || "#faq").replace("#", "");
+      switchErpPage(page);
+    });
+    const bootPage = normalizePage((location.hash || "").replace("#", ""));
+    if (bootPage && PAGE_CRUMB[bootPage] && bootPage !== "faq") switchErpPage(bootPage);
   </script>
+  <div class="range-picker" id="rangePicker" hidden>
+    <div class="rp-quick">
+      <div class="rp-quick-title">快速选择</div>
+      <div class="rp-presets" id="rpPresets"></div>
+    </div>
+    <div class="rp-cals">
+      <button type="button" class="rp-nav rp-prev" id="rpPrev" aria-label="上一月">‹</button>
+      <div class="rp-month" id="rpMonth0"></div>
+      <div class="rp-month" id="rpMonth1"></div>
+      <button type="button" class="rp-nav rp-next" id="rpNext" aria-label="下一月">›</button>
+    </div>
+  </div>
+  <div class="tip-pop" id="tipPop" hidden></div>
+  <div class="kpi-hover" id="kpiHover" hidden></div>
 </body>
 </html>
