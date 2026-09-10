@@ -955,6 +955,7 @@ table.data-table .col-actions .btn-danger-text { white-space: nowrap; }
 .rp-cals {
   position: relative; display: flex; gap: 28px; padding: 16px 40px 18px;
 }
+.rp-month { min-width: 224px; }
 .rp-nav {
   position: absolute; top: 16px; width: 24px; height: 24px; border: none;
   background: transparent; color: var(--text-helper); cursor: pointer;
@@ -965,10 +966,23 @@ table.data-table .col-actions .btn-danger-text { white-space: nowrap; }
 .rp-next { right: 10px; }
 .rp-month-title {
   text-align: center; font-size: 13px; font-weight: 500; color: var(--text-primary);
-  margin-bottom: 10px;
+  margin-bottom: 10px; display: flex; justify-content: center; align-items: center; gap: 4px;
+  min-height: 24px;
 }
+.rp-title-btn {
+  border: none; background: transparent; padding: 0 2px; cursor: pointer;
+  font-size: 13px; font-weight: 500; color: var(--text-primary); font-family: inherit;
+  line-height: 24px; border-radius: 4px;
+}
+.rp-title-btn:hover { color: var(--brand-primary); background: var(--bg-nav-hover); }
 .rp-grid {
   display: grid; grid-template-columns: repeat(7, 32px); justify-items: center;
+}
+.rp-grid-units {
+  grid-template-columns: repeat(4, 56px);
+  gap: 12px 0;
+  min-height: 168px;
+  padding-top: 8px;
 }
 .rp-dow {
   width: 32px; height: 28px; font-size: 12px; color: var(--text-helper);
@@ -979,14 +993,22 @@ table.data-table .col-actions .btn-danger-text { white-space: nowrap; }
   font-size: 13px; color: var(--text-primary); cursor: pointer; padding: 0;
   font-family: inherit; position: relative; z-index: 1;
 }
+.rp-unit {
+  width: 56px; height: 40px; font-size: 13px;
+}
 .rp-day.is-out { color: var(--text-disabled); }
 .rp-day.is-disabled { color: var(--text-disabled); cursor: not-allowed; }
 .rp-day.is-in { background: #E8F8EE; border-radius: 0; }
 .rp-day.is-start, .rp-day.is-end {
   background: #3DC456; color: #fff; border-radius: 50%;
 }
+.rp-unit.is-start, .rp-unit.is-end {
+  width: 48px; height: 40px; margin: 0 4px; border-radius: 20px;
+}
 .rp-day.is-start:not(.is-same) { box-shadow: 8px 0 0 #E8F8EE; }
 .rp-day.is-end:not(.is-same) { box-shadow: -8px 0 0 #E8F8EE; }
+.rp-unit.is-start:not(.is-same) { box-shadow: 16px 0 0 #E8F8EE; }
+.rp-unit.is-end:not(.is-same) { box-shadow: -16px 0 0 #E8F8EE; }
 .rp-day.is-start.is-end { box-shadow: none; }
 
 @media (max-width: 1440px) {

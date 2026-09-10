@@ -347,6 +347,20 @@
                     <div class="chart-tip pie-tip" hidden></div>
                   </div>
                 </div>
+                <div class="dash-chart-card compact">
+                  <div class="dash-chart-title">
+                    <span class="dash-chart-name">设备数量分布 <button type="button" class="metric-tip" data-tip="pie_devices" aria-label="设备数量分布说明">?</button></span>
+                    <div class="pie-cat" data-pie-kind="devices">
+                      <button type="button" class="range-pill active" data-pie-cat="all">全部</button>
+                      <button type="button" class="range-pill" data-pie-cat="light">灯类</button>
+                      <button type="button" class="range-pill" data-pie-cat="appliance">家电类</button>
+                    </div>
+                  </div>
+                  <div class="chart-hover-wrap pie-hover-wrap">
+                    <div class="os-split" id="pieDevices"></div>
+                    <div class="chart-tip pie-tip" hidden></div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -1789,7 +1803,8 @@
       ret_new: "在某一天新增的用户，在后续某一天（次日、第 7 日、第 30 日）仍使用产品的比例",
       pie_model: "App 在不同手机型号的下载分布",
       pie_version: "用户已安装 App 的版本分布",
-      pie_sku: "累计激活设备数中的 SKU 分布"
+      pie_sku: "累计激活设备数中的 SKU 分布",
+      pie_devices: "累计用户中，按绑定设备台数划分的用户数量分布。可按全部设备、灯类、家电类分别查看"
     };
     const CORE_CHIPS = [
       { id: "cum_users", label: "累计用户数", tip: "cum_users", kind: "count" },
@@ -1809,7 +1824,7 @@
 
     let dashDaily = [];
     let retWin = "d1";
-    let pieCat = { model: "all", version: "all", sku: "all" };
+    let pieCat = { model: "all", version: "all", sku: "all", devices: "all" };
     let coreMetrics = [];
     let openTipEl = null;
     const SEC_IDS = ["overview", "ret", "dist", "core"];
@@ -2017,13 +2032,41 @@
         { name: "H7160 制冰机", share: 0.06 }
       ]
     };
+    const PIE_DEVICES = {
+      all: [
+        { name: "0台", share: 0.08 },
+        { name: "1台", share: 0.42 },
+        { name: "2台", share: 0.22 },
+        { name: "3台", share: 0.12 },
+        { name: "4台", share: 0.08 },
+        { name: "5台及以上", share: 0.08 }
+      ],
+      light: [
+        { name: "0台", share: 0.18 },
+        { name: "1台", share: 0.32 },
+        { name: "2台", share: 0.22 },
+        { name: "3台", share: 0.14 },
+        { name: "4台", share: 0.08 },
+        { name: "5台及以上", share: 0.06 }
+      ],
+      appliance: [
+        { name: "0台", share: 0.48 },
+        { name: "1台", share: 0.32 },
+        { name: "2台", share: 0.12 },
+        { name: "3台", share: 0.05 },
+        { name: "4台", share: 0.02 },
+        { name: "5台及以上", share: 0.01 }
+      ]
+    };
     const PIE_CAT_RATIO = {
       model: { all: 1, ios: 0.38, android: 0.62 },
       version: { all: 1, ios: 0.38, android: 0.62 },
-      sku: { all: 1, light: 0.72, appliance: 0.28 }
+      sku: { all: 1, light: 0.72, appliance: 0.28 },
+      devices: { all: 1, light: 1, appliance: 1 }
     };
     function pieData(kind) {
       const cat = pieCat[kind];
+      if (kind === "devices") return (PIE_DEVICES[cat] || PIE_DEVICES.all).map(it => ({ ...it }));
       const raw = kind === "model" ? PIE_MODEL[cat] : kind === "version" ? PIE_VERSION[cat] : PIE_SKU[cat];
       return pieTopNWithOther(raw || [], 5);
     }
@@ -2106,6 +2149,7 @@
     let pickerDraft = { from: null, to: null };
     let pickerPicking = false;
     let pickerMonth = { y: 2026, m: 7 };
+    let pickerView = "day";
 
     function toYmd(d) {
       const y = d.getFullYear();
@@ -2176,10 +2220,41 @@
       if (from && (!to || from === to) && ymd === from) cls.push("is-same");
       return cls.join(" ");
     }
+    function monthFirstYmd(y, m) {
+      return `${y}-${String(m + 1).padStart(2, "0")}-01`;
+    }
+    function monthLastYmd(y, m) {
+      return toYmd(new Date(y, m + 1, 0));
+    }
+    function decadeStart(y) {
+      return Math.floor(y / 10) * 10 - 1;
+    }
+    function rpUnitClass(kind, value) {
+      const { from, to } = pickerDraft;
+      const cls = ["rp-day", "rp-unit"];
+      const start = from || null;
+      const end = to || (pickerPicking ? null : from);
+      if (kind === "month") {
+        const ymd0 = monthFirstYmd(value.y, value.m);
+        const ymd1 = monthLastYmd(value.y, value.m);
+        if (ymd1 < DASH_FIRST || ymd0 > DASH_LATEST) cls.push("is-disabled");
+        if (start && start.slice(0, 7) === ymd0.slice(0, 7)) cls.push("is-start");
+        if (end && end.slice(0, 7) === ymd0.slice(0, 7)) cls.push("is-end");
+        if (start && end && ymd0.slice(0, 7) > start.slice(0, 7) && ymd0.slice(0, 7) < end.slice(0, 7)) cls.push("is-in");
+      } else {
+        const ymd0 = `${value}-01-01`;
+        const ymd1 = `${value}-12-31`;
+        if (ymd1 < DASH_FIRST || ymd0 > DASH_LATEST) cls.push("is-disabled");
+        if (start && Number(start.slice(0, 4)) === value) cls.push("is-start");
+        if (end && Number(end.slice(0, 4)) === value) cls.push("is-end");
+        if (start && end && value > Number(start.slice(0, 4)) && value < Number(end.slice(0, 4))) cls.push("is-in");
+      }
+      if (cls.includes("is-start") && cls.includes("is-end")) cls.push("is-same");
+      return cls.join(" ");
+    }
     function renderRpMonth(el, y, m) {
       const first = new Date(y, m, 1);
       const cursor = new Date(y, m, 1 - first.getDay());
-      const title = `${y}年 ${String(m + 1).padStart(2, "0")}月`;
       const heads = ["日", "一", "二", "三", "四", "五", "六"].map(d => `<span class="rp-dow">${d}</span>`).join("");
       const cells = [];
       for (let i = 0; i < 42; i++) {
@@ -2188,12 +2263,36 @@
         cells.push(`<button type="button" class="${rpCellClass(ymd, inMonth)}" data-rp-day="${ymd}" ${ymd < DASH_FIRST || ymd > DASH_LATEST ? "disabled" : ""}>${cursor.getDate()}</button>`);
         cursor.setDate(cursor.getDate() + 1);
       }
-      el.innerHTML = `<div class="rp-month-title">${title}</div><div class="rp-grid">${heads}${cells.join("")}</div>`;
+      el.innerHTML = `<div class="rp-month-title">
+        <button type="button" class="rp-title-btn" data-rp-view="year" data-rp-y="${y}">${y}年</button>
+        <button type="button" class="rp-title-btn" data-rp-view="month" data-rp-y="${y}">${String(m + 1).padStart(2, "0")}月</button>
+      </div><div class="rp-grid">${heads}${cells.join("")}</div>`;
+    }
+    function renderRpMonths(el, y) {
+      const cells = [];
+      for (let m = 0; m < 12; m++) {
+        const disabled = rpUnitClass("month", { y, m }).includes("is-disabled");
+        cells.push(`<button type="button" class="${rpUnitClass("month", { y, m })}" data-rp-ym="${y}-${m}" ${disabled ? "disabled" : ""}>${m + 1}</button>`);
+      }
+      el.innerHTML = `<div class="rp-month-title">
+        <button type="button" class="rp-title-btn" data-rp-view="year" data-rp-y="${y}">${y}年</button>
+      </div><div class="rp-grid rp-grid-units">${cells.join("")}</div>`;
+    }
+    function renderRpYears(el, start) {
+      const cells = [];
+      for (let i = 0; i < 12; i++) {
+        const y = start + i;
+        const disabled = rpUnitClass("year", y).includes("is-disabled");
+        cells.push(`<button type="button" class="${rpUnitClass("year", y)}" data-rp-year="${y}" ${disabled ? "disabled" : ""}>${y}</button>`);
+      }
+      el.innerHTML = `<div class="rp-month-title">${start}年 – ${start + 11}年</div>
+        <div class="rp-grid rp-grid-units">${cells.join("")}</div>`;
     }
     function renderRangePicker() {
       const el = document.getElementById("rangePicker");
       if (!el) return;
       el.classList.toggle("is-single-day", isDayPickerSec(pickerSec));
+      el.dataset.view = pickerView;
       const presets = document.getElementById("rpPresets");
       if (presets && !presets.dataset.ready) {
         presets.innerHTML = RP_PRESETS.map(([id, label]) =>
@@ -2201,13 +2300,29 @@
         ).join("");
         presets.dataset.ready = "1";
       }
+      const prev = document.getElementById("rpPrev");
+      const next = document.getElementById("rpNext");
+      if (prev) prev.setAttribute("aria-label", pickerView === "year" ? "上十年" : pickerView === "month" ? "上一年" : "上一月");
+      if (next) next.setAttribute("aria-label", pickerView === "year" ? "下十年" : pickerView === "month" ? "下一年" : "下一月");
       const y = pickerMonth.y, m = pickerMonth.m;
+      if (pickerView === "year") {
+        const start = decadeStart(y);
+        renderRpYears(document.getElementById("rpMonth0"), start);
+        renderRpYears(document.getElementById("rpMonth1"), start + 10);
+        return;
+      }
+      if (pickerView === "month") {
+        renderRpMonths(document.getElementById("rpMonth0"), y);
+        renderRpMonths(document.getElementById("rpMonth1"), y + 1);
+        return;
+      }
       const n = m === 11 ? { y: y + 1, m: 0 } : { y, m: m + 1 };
       renderRpMonth(document.getElementById("rpMonth0"), y, m);
       renderRpMonth(document.getElementById("rpMonth1"), n.y, n.m);
     }
     function openRangePicker(secId, anchor) {
       pickerSec = secId;
+      pickerView = "day";
       const r = secRange[secId];
       pickerDraft = isDayPickerSec(secId)
         ? { from: r.from, to: r.from }
@@ -2311,13 +2426,20 @@
       const sign = r > 0 ? "+" : "";
       return { text: sign + (r * 100).toFixed(1) + "%", cls: deltaClass(r) };
     }
-    function kpiCompareRows(key, cur, isSingle, from, to) {
+    function kpiCompareRows(key, cur, isSingle, from, to, full) {
       const curr = cur ? cur[key] : null;
       if (isSingle) {
-        return [
+        const offsets = [
           ["较昨日", ymdAdd(from, -1)],
           ["较7日前", ymdAdd(from, -7)]
-        ].map(([name, day]) => {
+        ];
+        if (full) {
+          offsets.push(
+            ["较30日前", ymdAdd(from, -30)],
+            ["较365日前", ymdAdd(from, -365)]
+          );
+        }
+        return offsets.map(([name, day]) => {
           const other = aggRange(day, day);
           return [name, fmtCmpCell(curr, other ? other[key] : null)];
         });
@@ -2339,7 +2461,7 @@
       const { isSingle, from, to, cur } = kpiHoverCtx;
       const curr = cur ? cur[key] : null;
       const label = card.querySelector(".label")?.textContent || "";
-      const compares = kpiCompareRows(key, cur, isSingle, from, to);
+      const compares = kpiCompareRows(key, cur, isSingle, from, to, true);
       pop.innerHTML = `<div class="kpi-hover-name">${label}</div>
         <div class="kpi-hover-value">${fmtHoverMain(key, curr)}</div>
         <div class="kpi-hover-rows">${compares.map(([name, cell]) =>
@@ -2765,6 +2887,7 @@
       renderPie(document.getElementById("pieModel"), "model");
       renderPie(document.getElementById("pieVersion"), "version");
       renderPie(document.getElementById("pieSku"), "sku");
+      renderPie(document.getElementById("pieDevices"), "devices");
     }
     function renderCoreTrend(chartDays) {
       const defs = selectedCoreDefs();
@@ -2929,6 +3052,29 @@
         applyPickerRange(r.from, r.to);
         return;
       }
+      const viewBtn = e.target.closest("[data-rp-view]");
+      if (viewBtn) {
+        const y = Number(viewBtn.dataset.rpY);
+        if (Number.isFinite(y)) pickerMonth.y = y;
+        pickerView = viewBtn.dataset.rpView;
+        renderRangePicker();
+        return;
+      }
+      const yearBtn = e.target.closest("[data-rp-year]");
+      if (yearBtn && !yearBtn.disabled) {
+        pickerMonth.y = Number(yearBtn.dataset.rpYear);
+        pickerView = "month";
+        renderRangePicker();
+        return;
+      }
+      const ymBtn = e.target.closest("[data-rp-ym]");
+      if (ymBtn && !ymBtn.disabled) {
+        const [yy, mm] = ymBtn.dataset.rpYm.split("-").map(Number);
+        pickerMonth = { y: yy, m: mm };
+        pickerView = "day";
+        renderRangePicker();
+        return;
+      }
       const dayBtn = e.target.closest("[data-rp-day]");
       if (dayBtn && !dayBtn.disabled) {
         const ymd = dayBtn.dataset.rpDay;
@@ -2946,14 +3092,22 @@
         return;
       }
       if (e.target.closest("#rpPrev")) {
-        pickerMonth.m -= 1;
-        if (pickerMonth.m < 0) { pickerMonth.m = 11; pickerMonth.y -= 1; }
+        if (pickerView === "year") pickerMonth.y -= 10;
+        else if (pickerView === "month") pickerMonth.y -= 1;
+        else {
+          pickerMonth.m -= 1;
+          if (pickerMonth.m < 0) { pickerMonth.m = 11; pickerMonth.y -= 1; }
+        }
         renderRangePicker();
         return;
       }
       if (e.target.closest("#rpNext")) {
-        pickerMonth.m += 1;
-        if (pickerMonth.m > 11) { pickerMonth.m = 0; pickerMonth.y += 1; }
+        if (pickerView === "year") pickerMonth.y += 10;
+        else if (pickerView === "month") pickerMonth.y += 1;
+        else {
+          pickerMonth.m += 1;
+          if (pickerMonth.m > 11) { pickerMonth.m = 0; pickerMonth.y += 1; }
+        }
         renderRangePicker();
         return;
       }
