@@ -9,7 +9,7 @@
     PRD v4 · Page type: list + tabs + drawer
     Components: Breadcrumb, Tabs, Search, Table, Pagination, DataCard, Dialog, Drawer, MessageConfirm, Tag
     Shell: sidebar 240 + topbar 60 + light-nav · 单面板(Tab+筛选+表格) · inline Label
-    Single menu: 配置 / FAQ管理 · Three tabs in one page
+    Menus: 看板 / 核心数据、质量监控 · 配置 / FAQ管理
   -->
 </head>
 <body>
@@ -23,6 +23,7 @@
         <div class="nav-group">
           <div class="nav-l1">▤ 看板<span class="arrow">›</span></div>
           <div class="nav-l2" data-page="core" role="button" tabindex="0">核心数据</div>
+          <div class="nav-l2" data-page="quality" role="button" tabindex="0">质量监控</div>
         </div>
         <div class="nav-group">
           <div class="nav-l1">▣ 配置<span class="arrow">›</span></div>
@@ -384,6 +385,23 @@
             </div>
           </div>
         </div>
+
+        <!-- ========== 看板 · 质量监控（业务数据合理性） ========== -->
+        <div id="page-quality" class="page-view">
+          <div class="panel-card">
+            <div class="page-tabs" role="tablist">
+              <button type="button" class="page-tab active" data-qm-tab="overview" role="tab">总览</button>
+              <button type="button" class="page-tab" data-qm-tab="mapping" role="tab">业务映射</button>
+              <button type="button" class="page-tab" data-qm-tab="chains" role="tab">算子链</button>
+              <button type="button" class="page-tab" data-qm-tab="operators" role="tab">算子插件</button>
+              <button type="button" class="btn-link qm-help-btn" id="qmHelpBtn">说明</button>
+            </div>
+            <section id="qm-panel-overview" class="tab-panel active" role="tabpanel"></section>
+            <section id="qm-panel-mapping" class="tab-panel" role="tabpanel"></section>
+            <section id="qm-panel-chains" class="tab-panel" role="tabpanel"></section>
+            <section id="qm-panel-operators" class="tab-panel" role="tabpanel"></section>
+          </div>
+        </div>
       </main>
     </div>
   </div>
@@ -649,6 +667,259 @@
 
   <div class="toast" id="toast" role="status"></div>
 
+  <div class="mask" id="qmChainMask" role="dialog" aria-modal="true">
+    <div class="dialog" style="width:560px">
+      <div class="dialog-header">
+        <span id="qmChainTitle">新建算子链</span>
+        <button type="button" class="btn-icon" data-close="qmChainMask" aria-label="关闭">✕</button>
+      </div>
+      <div class="dialog-body">
+        <div class="form-item" id="qmChainNameItem">
+          <label><span class="req">*</span>算子链名称</label>
+          <input class="input" id="qmChainName" placeholder="请输入算子链名称" />
+          <div class="error-text">算子链名称不能为空</div>
+        </div>
+        <div class="form-item" id="qmChainModelItem">
+          <label><span class="req">*</span>模型类型</label>
+          <select class="select" id="qmChainModel">
+            <option value="">请选择</option>
+          </select>
+          <div class="error-text">请选择模型类型</div>
+        </div>
+        <div class="form-item is-hidden" id="qmChainStepsItem">
+          <label><span class="req">*</span>算子插件</label>
+          <div class="qm-checks" id="qmChainSteps"></div>
+          <div class="hint" id="qmChainOrder">可多选，按勾选顺序组成算子链</div>
+          <div class="error-text">请至少选择一个算子插件</div>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" class="btn" data-close="qmChainMask">取消</button>
+        <button type="button" class="btn btn-primary" id="qmChainSave">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mask" id="qmOpMask" role="dialog" aria-modal="true">
+    <div class="dialog" style="width:560px">
+      <div class="dialog-header">
+        <span>Mock 登记算子插件</span>
+        <button type="button" class="btn-icon" data-close="qmOpMask" aria-label="关闭">✕</button>
+      </div>
+      <div class="dialog-body">
+        <div class="form-item" id="qmOpIdItem">
+          <label><span class="req">*</span>operatorId</label>
+          <input class="input" id="qmOpId" placeholder="如 range_check" />
+          <div class="hint">真实环境由 Java 插件 class 注册，此处仅原型</div>
+          <div class="error-text">operatorId 不能为空</div>
+        </div>
+        <div class="form-item" id="qmOpNameItem">
+          <label><span class="req">*</span>名称</label>
+          <input class="input" id="qmOpName" />
+          <div class="error-text">名称不能为空</div>
+        </div>
+        <div class="form-item" id="qmOpModelItem">
+          <label><span class="req">*</span>模型类型</label>
+          <select class="select" id="qmOpModel">
+            <option value="">请选择</option>
+          </select>
+          <div class="error-text">请选择模型类型</div>
+        </div>
+        <div class="form-item">
+          <label>判定语义</label>
+          <textarea class="textarea" id="qmOpSemantics" rows="2" placeholder="失败条件简述" style="min-height:72px"></textarea>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" class="btn" data-close="qmOpMask">取消</button>
+        <button type="button" class="btn btn-primary" id="qmOpSave">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mask" id="qmBoardMask" role="dialog" aria-modal="true">
+    <div class="dialog" style="width:480px">
+      <div class="dialog-header">
+        <span>新建业务看板</span>
+        <button type="button" class="btn-icon" data-close="qmBoardMask" aria-label="关闭">✕</button>
+      </div>
+      <div class="dialog-body">
+        <div class="form-item" id="qmBoardNameItem">
+          <label><span class="req">*</span>名称</label>
+          <input class="input" id="qmBoardName" placeholder="请输入业务看板名称" />
+          <div class="error-text">名称不能为空</div>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" class="btn" data-close="qmBoardMask">取消</button>
+        <button type="button" class="btn btn-primary" id="qmBoardSave">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mask" id="qmSecMask" role="dialog" aria-modal="true">
+    <div class="dialog" style="width:480px">
+      <div class="dialog-header">
+        <span>新建区块</span>
+        <button type="button" class="btn-icon" data-close="qmSecMask" aria-label="关闭">✕</button>
+      </div>
+      <div class="dialog-body">
+        <div class="form-item" id="qmSecBoardItem">
+          <label><span class="req">*</span>业务看板</label>
+          <select class="select" id="qmSecBoard"><option value="">请选择</option></select>
+          <div class="error-text">请选择业务看板</div>
+        </div>
+        <div class="form-item" id="qmSecNameItem">
+          <label><span class="req">*</span>区块名称</label>
+          <input class="input" id="qmSecName" placeholder="请输入区块名称" />
+          <div class="error-text">区块名称不能为空</div>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" class="btn" data-close="qmSecMask">取消</button>
+        <button type="button" class="btn btn-primary" id="qmSecSave">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mask" id="qmProbeMask" role="dialog" aria-modal="true">
+    <div class="dialog" style="width:560px">
+      <div class="dialog-header">
+        <span>新建接口</span>
+        <button type="button" class="btn-icon" data-close="qmProbeMask" aria-label="关闭">✕</button>
+      </div>
+      <div class="dialog-body">
+        <div class="form-item" id="qmProbeBoardItem">
+          <label><span class="req">*</span>业务看板</label>
+          <select class="select" id="qmProbeBoard"><option value="">请选择</option></select>
+          <div class="error-text">请选择业务看板</div>
+        </div>
+        <div class="form-item is-hidden" id="qmProbeSecItem">
+          <label><span class="req">*</span>区块</label>
+          <select class="select" id="qmProbeSec"><option value="">请选择</option></select>
+          <div class="error-text">请选择区块</div>
+        </div>
+        <div class="form-item" id="qmProbeNameItem">
+          <label><span class="req">*</span>接口名称</label>
+          <input class="input" id="qmProbeName" placeholder="如 getFirstBindData()" />
+          <div class="error-text">接口名称不能为空</div>
+        </div>
+        <div class="form-item">
+          <label><span class="req">*</span>方法</label>
+          <select class="select" id="qmProbeMethod">
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+          </select>
+        </div>
+        <div class="form-item" id="qmProbePathItem">
+          <label><span class="req">*</span>路径</label>
+          <div class="qm-path-row">
+            <span class="qm-brace">{</span>
+            <input class="input qm-url-input" id="qmProbeUrl" value="url" aria-label="路径变量" />
+            <span class="qm-brace">}</span>
+            <input class="input qm-path-input" id="qmProbePath" placeholder="/api/..." />
+          </div>
+          <div class="error-text">路径不能为空</div>
+        </div>
+        <div class="form-item" id="qmProbeChainItem">
+          <label><span class="req">*</span>算子链</label>
+          <div class="qm-tag-field">
+            <div class="qm-tag-field-tags" id="qmProbeChainTags"></div>
+            <select class="qm-tag-field-pick" id="qmProbeChainPick" aria-label="选择算子链"></select>
+          </div>
+          <div class="error-text">请选择算子链</div>
+        </div>
+        <div class="form-item" id="qmProbeRelationItem">
+          <label><span class="req">*</span>映射关系</label>
+          <input class="input" id="qmProbeRelation" placeholder="请输入映射关系" />
+          <div class="error-text">映射关系不能为空</div>
+        </div>
+        <div class="form-item">
+          <label><span class="req">*</span>状态</label>
+          <select class="select" id="qmProbeStatus">
+            <option value="启用">启用</option>
+            <option value="禁用">禁用</option>
+          </select>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" class="btn" data-close="qmProbeMask">取消</button>
+        <button type="button" class="btn btn-primary" id="qmProbeSave">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mask" id="qmConfirmMask" role="dialog" aria-modal="true">
+    <div class="dialog">
+      <div class="dialog-header">
+        <span id="qmConfirmTitle">确认删除</span>
+        <button type="button" class="btn-icon" data-close="qmConfirmMask" aria-label="关闭">✕</button>
+      </div>
+      <div class="dialog-body" id="qmConfirmBody">确认删除？</div>
+      <div class="dialog-footer">
+        <button type="button" class="btn" data-close="qmConfirmMask">取消</button>
+        <button type="button" class="btn btn-primary" id="qmConfirmOk" style="background:var(--error);border-color:var(--error)">删除</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mask" id="qmHelpMask" role="dialog" aria-modal="true">
+    <div class="dialog" style="width:520px">
+      <div class="dialog-header">
+        <span>业务数据合理性</span>
+        <button type="button" class="btn-icon" data-close="qmHelpMask" aria-label="关闭">✕</button>
+      </div>
+      <div class="dialog-body qm-help">
+        <div class="qm-help-sec">
+          <div class="qm-help-label">做什么</div>
+          <ol>
+            <li>用映射树对齐业务看板 → 区块 → 接口名称，再挂算子链判异常</li>
+            <li>总览按业务看板聚合下钻</li>
+          </ol>
+        </div>
+        <div class="qm-help-sec">
+          <div class="qm-help-label">映射树</div>
+          <ul>
+            <li><strong>业务看板</strong>：一级，创建时只填名称</li>
+            <li><strong>区块</strong>：二级，先选业务看板再创建</li>
+            <li><strong>接口名称</strong>：三级，选看板和区块后填写方法、路径、算子链、映射关系与启用状态</li>
+          </ul>
+        </div>
+        <div class="qm-help-sec">
+          <div class="qm-help-label">状态</div>
+          <p>只有两档：健康 / 异常（不做亚健康）</p>
+        </div>
+        <div class="qm-help-sec">
+          <div class="qm-help-label">怎么分工</div>
+          <ul>
+            <li><strong>算子插件</strong>：Java 发版注册</li>
+            <li><strong>算子链</strong>：前端单独组插件顺序，可复用</li>
+            <li><strong>业务映射</strong>：树形挂接口与链</li>
+            <li>框架定时跑门闩 + 链 → 写缓存；总览只读</li>
+          </ul>
+        </div>
+        <div class="qm-help-sec">
+          <div class="qm-help-label">主链路</div>
+          <div class="qm-flow">
+            <span class="tag tag-custom">插件</span><span class="qm-flow-arrow">→</span>
+            <span class="tag tag-custom">算子链</span><span class="qm-flow-arrow">→</span>
+            <span class="tag tag-custom">挂到接口</span><span class="qm-flow-arrow">→</span>
+            <span class="tag tag-custom">定时探测</span><span class="qm-flow-arrow">→</span>
+            <span class="tag tag-custom">总览</span>
+          </div>
+        </div>
+        <div class="qm-help-sec">
+          <div class="qm-help-label">打分</div>
+          <p>任一门闩 / 插件失败 → 异常 · 0 分</p>
+          <p>全部通过 → 健康 · 100 分</p>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" class="btn btn-primary" data-close="qmHelpMask">知道了</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     /* —— Mock data · sorted view↓ created↑ —— */
     let faqs = [
@@ -796,11 +1067,12 @@
       return d ? Math.round((h / d) * 100) + "%" : "—";
     }
 
-    /* Tabs */
-    document.querySelectorAll(".page-tab").forEach(tab => {
+    /* Tabs（仅 FAQ 页，避免影响质量监控页签） */
+    const faqPage = document.getElementById("page-faq");
+    faqPage.querySelectorAll(".page-tab").forEach(tab => {
       tab.addEventListener("click", () => {
-        document.querySelectorAll(".page-tab").forEach(t => t.classList.remove("active"));
-        document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+        faqPage.querySelectorAll(".page-tab").forEach(t => t.classList.remove("active"));
+        faqPage.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
         tab.classList.add("active");
         document.getElementById("panel-" + tab.dataset.tab).classList.add("active");
         if (tab.dataset.tab === "stats") { renderStats(); renderMiss(); }
@@ -1780,7 +2052,8 @@
     const DASH_FIRST = "2026-08-09";
     const PAGE_CRUMB = {
       faq: ["配置", "FAQ 管理"],
-      core: ["看板", "核心数据"]
+      core: ["看板", "核心数据"],
+      quality: ["看板", "质量监控"]
     };
     const PIE_COLORS = ["#0087FF", "#FAA700", "#3DC456", "#8690AA", "#F45C5C", "#6B7CFF"];
     const METRIC_TIPS = {
@@ -1797,6 +2070,7 @@
       pv: "统计日内页面预览次数（PV）",
       pages_per_user: "统计日内，页面预览次数（PV）÷ 打开 App 用户（UV）",
       depth: "统计日内，页面预览次数（PV）÷ 打开次数",
+      avg_duration: "使用时长 ÷ 使用用户数。平均每个活跃用户在时段内总共使用多久。偏高说明多数人重度使用，偏低说明打开的人多但停得短",
       churned: "截至当日，在累计用户中，过去 90 天内没有访问过 App 的用户",
       returned: "在累计用户中，过去 90 天内无访问，但当日有访问的用户",
       ret_active: "在某一天活跃的所有用户，在后续某一天（次日、第 7 日、第 30 日）仍活跃的比例。活跃日留存如果长期低于新增日留存，说明老用户在流失",
@@ -1804,7 +2078,8 @@
       pie_model: "App 在不同手机型号的下载分布",
       pie_version: "用户已安装 App 的版本分布",
       pie_sku: "累计激活设备数中的 SKU 分布",
-      pie_devices: "累计用户中，按绑定设备台数划分的用户数量分布。可按全部设备、灯类、家电类分别查看"
+      pie_devices: "累计用户中，按绑定设备台数划分的用户数量分布。可按全部设备、灯类、家电类分别查看",
+      detect_chain: "HTTP 连通性 → 业务 code → data_not_empty → single_point_anomaly（按接口配置启用）；结果来自定时探测缓存"
     };
     const CORE_CHIPS = [
       { id: "cum_users", label: "累计用户数", tip: "cum_users", kind: "count" },
@@ -1866,6 +2141,14 @@
       if (ratio == null || Number.isNaN(ratio)) return "—";
       return (ratio * 100).toFixed(1) + "%";
     }
+    function fmtDurationHms(sec) {
+      if (sec == null || Number.isNaN(sec)) return "—";
+      const total = Math.max(0, Math.round(Number(sec)));
+      const h = Math.floor(total / 3600);
+      const m = Math.floor((total % 3600) / 60);
+      const s = total % 60;
+      return `${h}'${String(m).padStart(2, "0")}'${String(s).padStart(2, "0")}`;
+    }
     function deltaClass(ratio) {
       if (ratio == null || Number.isNaN(ratio) || ratio === 0) return "flat";
       return ratio > 0 ? "up" : "down";
@@ -1904,6 +2187,7 @@
         const opens = Math.round(dau * (1.32 + Math.sin(w / 3) * 0.06));
         const pv = Math.round(opens * (2.35 + Math.sin(w / 4) * 0.15));
         const opensNew = Math.round(newUsers * (1.72 + Math.sin(w / 5) * 0.08));
+        const durationSec = Math.round(dau * (5025 + Math.sin(w / 3.5) * 90));
         churned = Math.round(churned + 85 + Math.sin(w / 6) * 30);
         const returned = Math.round(210 + (i <= 29 ? t * 3 : 40) + Math.sin(w / 2.2) * 40);
         rows.push({
@@ -1919,6 +2203,7 @@
           opens,
           pv,
           opens_new: opensNew,
+          duration_sec: durationSec,
           churned,
           returned,
           ret_active_d1: 0.412 + Math.sin(t / 6) * 0.016,
@@ -2373,6 +2658,7 @@
         pv,
         pages_per_user: uv ? pv / uv : null,
         depth: opens ? pv / opens : null,
+        avg_duration: uv ? sum("duration_sec") / uv : null,
         churned: last.churned,
         returned: single ? last.returned : sum("returned"),
         ret_active_d1: last.ret_active_d1,
@@ -2417,6 +2703,7 @@
       if (v == null || Number.isNaN(v)) return "—";
       if (key === "pair_rate" || key === "online_rate") return fmtPct(v);
       if (key === "pages_per_user") return `${Number(v).toFixed(2)} <small>页</small>`;
+      if (key === "avg_duration") return fmtDurationHms(v);
       if (key === "depth") return Number(v).toFixed(2);
       return fmtNum(v);
     }
@@ -2948,7 +3235,8 @@
       document.getElementById("kpiUsage").innerHTML = [
         { label: "打开次数", tipKey: "opens", kpiKey: "opens", value: fmtNum(cur.opens) },
         { label: "人均使用页面数", tipKey: "pages_per_user", kpiKey: "pages_per_user", value: cur.pages_per_user == null ? "—" : cur.pages_per_user.toFixed(2) },
-        { label: "使用深度", tipKey: "depth", kpiKey: "depth", value: cur.depth == null ? "—" : cur.depth.toFixed(2) }
+        { label: "使用深度", tipKey: "depth", kpiKey: "depth", value: cur.depth == null ? "—" : cur.depth.toFixed(2) },
+        { label: "人均使用时长", tipKey: "avg_duration", kpiKey: "avg_duration", value: fmtDurationHms(cur.avg_duration) }
       ].map(kpiItem).join("");
 
       document.getElementById("kpiChurn").innerHTML = [
@@ -3134,6 +3422,915 @@
       const page = (location.hash || "#faq").replace("#", "");
       switchErpPage(page);
     });
+    /* —— 看板 · 质量监控（业务数据合理性） —— */
+    (function initQualityMonitor() {
+      const RANK = { healthy: 0, abnormal: 1 };
+      const SEV_LABEL = { healthy: "健康", abnormal: "异常" };
+      const SEV_TAG = { healthy: "tag-published", abnormal: "tag-error" };
+      const NODE_META = {
+        surface: { label: "业务看板", tag: "tag-preset", hint: "一级节点，创建时只填写名称。" },
+        section: { label: "区块", tag: "tag-cyan", hint: "二级节点，挂在业务看板下。" },
+        probe: { label: "接口名称", tag: "tag-purple", hint: "三级节点，挂一条已构建的算子链；默认启用。" }
+      };
+      const SURFACES = [
+        {
+          id: "basic", name: "APP基本数据看板", route: "/board/basicPanel",
+          probes: [
+            { id: "b1", section: "用户活跃", title: "首次绑定数据", fn: "getFirstBindData()", method: "GET", path: "/device/board/sku/first-bind", svc: "BI数据服务 (dev-blapp-api.govee.com)", rt: 300.9, score: 0, severity: "abnormal", conclusion: "single_point_anomaly：销量出现负数" },
+            { id: "b2", section: "SKU统计", title: "SKU 汇总", fn: "getSkuSummary()", method: "GET", path: "/device/board/sku/summary", svc: "BI数据服务 (dev-blapp-api.govee.com)", rt: 291.9, score: 100, severity: "healthy", conclusion: "数据合理，指标正常" },
+            { id: "b3", section: "用户活跃", title: "活跃设备", fn: "getActiveDevices()", method: "GET", path: "/device/board/active", svc: "BI数据服务 (dev-blapp-api.govee.com)", rt: 188.2, score: 100, severity: "healthy", conclusion: "数据合理，指标正常" }
+          ]
+        },
+        {
+          id: "usage", name: "APP功能使用看板", route: "/board/usagePanel",
+          probes: [
+            { id: "u1", section: "功能分析", title: "功能渗透", fn: "getFeatureFunnel()", method: "GET", path: "/bi/feature/funnel", svc: "BI数据服务", rt: 412, score: 0, severity: "abnormal", conclusion: "data_not_empty：data 为空数组 []" },
+            { id: "u2", section: "活跃趋势", title: "日活趋势", fn: "getDau()", method: "GET", path: "/bi/dau", svc: "BI数据服务", rt: 156, score: 100, severity: "healthy", conclusion: "数据合理，指标正常" }
+          ]
+        },
+        {
+          id: "ops", name: "运营看板", route: "/board/ops",
+          probes: [
+            { id: "o1", section: "交易概览", title: "GMV", fn: "getGmv()", method: "GET", path: "/ops/gmv", svc: "运营服务", rt: 220, score: 0, severity: "abnormal", conclusion: "builtin:http：HTTP 500" },
+            { id: "o2", section: "交易概览", title: "订单量", fn: "getOrders()", method: "GET", path: "/ops/orders", svc: "运营服务", rt: 190, score: 100, severity: "healthy", conclusion: "数据合理，指标正常" }
+          ]
+        },
+        {
+          id: "warn", name: "预警看板", route: "/board/warning",
+          probes: [
+            { id: "w1", section: "预警列表", title: "预警列表", fn: "listWarnings()", method: "GET", path: "/alert/list", svc: "预警服务", rt: 98, score: 100, severity: "healthy", conclusion: "数据合理，指标正常" }
+          ]
+        },
+        {
+          id: "pad", name: "PAD看板", route: "/board/pad",
+          probes: [
+            { id: "p1", section: "首页", title: "PAD 首页", fn: "getPadHome()", method: "GET", path: "/pad/home", svc: "PAD 服务", rt: 140, score: 100, severity: "healthy", conclusion: "数据合理，指标正常" }
+          ]
+        },
+        {
+          id: "pc", name: "PC看板", route: "/board/pc",
+          probes: [
+            { id: "pc1", section: "首页", title: "PC 首页", fn: "getPcHome()", method: "GET", path: "/pc/home", svc: "PC 服务", rt: 120, score: 100, severity: "healthy", conclusion: "数据合理，指标正常" },
+            { id: "pc2", section: "设备", title: "PC 设备列表", fn: "getPcDevices()", method: "GET", path: "/pc/devices", svc: "PC 服务", rt: 168, score: 100, severity: "healthy", conclusion: "数据合理，指标正常" }
+          ]
+        },
+        {
+          id: "light", name: "灯效看板", route: "/board/light",
+          probes: [
+            { id: "l1", section: "使用情况", title: "灯效使用", fn: "getLightEffect()", method: "GET", path: "/light/effect", svc: "灯效服务", rt: 132, score: 100, severity: "healthy", conclusion: "数据合理，指标正常" },
+            { id: "l2", section: "场景", title: "场景分布", fn: "getLightScene()", method: "GET", path: "/light/scene", svc: "灯效服务", rt: 146, score: 100, severity: "healthy", conclusion: "数据合理，指标正常" }
+          ]
+        }
+      ];
+      const MODEL_TYPES = [
+        { id: "completeness", name: "完整性模型" },
+        { id: "numeric", name: "数值合理性模型" },
+        { id: "consistency", name: "一致性模型" }
+      ];
+      const modelName = (id) => (MODEL_TYPES.find((m) => m.id === id) || {}).name || "—";
+      let operators = [
+        { id: "data_not_empty", name: "空数据检查", kind: "业务插件", chainable: true, modelType: "completeness", semantics: "data 为 null/缺省/[]/{} \"\" 则异常；数字 0 通过" },
+        { id: "field_required", name: "必填字段检查", kind: "业务插件", chainable: true, modelType: "completeness", semantics: "约定字段缺失或为空则异常" },
+        { id: "single_point_anomaly", name: "单点异常", kind: "业务插件", chainable: true, modelType: "numeric", semantics: "递归扫描 number；<0 或非有限数则异常" },
+        { id: "range_check", name: "数值区间", kind: "业务插件", chainable: true, modelType: "numeric", semantics: "超出配置上下限则异常" },
+        { id: "ratio_drift", name: "比率漂移", kind: "业务插件", chainable: true, modelType: "consistency", semantics: "环比超出阈值则异常" },
+        { id: "cross_check", name: "交叉校验", kind: "业务插件", chainable: true, modelType: "consistency", semantics: "关联指标对不齐则异常" },
+        { id: "builtin:http", name: "HTTP 门闩", kind: "内置门闩", chainable: false, semantics: "非 2xx / 超时 / 无法连接 → 异常；自动跑，不进可配链" },
+        { id: "builtin:biz_code", name: "业务 code 门闩", kind: "内置门闩", chainable: false, semantics: "存在 code 且非 0/200 → 异常；无 code 字段则跳过" }
+      ];
+      let chains = [
+        { id: "c1", name: "空数据链", modelType: "completeness", steps: ["data_not_empty"] },
+        { id: "c2", name: "单点异常链", modelType: "numeric", steps: ["single_point_anomaly"] },
+        { id: "c3", name: "默认双算子", modelType: "completeness", steps: ["data_not_empty", "field_required"] }
+      ];
+      const probeNode = (id, name, method, path, chainId, relation) => ({
+        id, type: "probe", name, method, path, status: "启用",
+        chainIds: Array.isArray(chainId) ? chainId.slice() : (chainId ? [chainId] : []),
+        relation: relation || ""
+      });
+      const sectionNode = (id, name, children) => ({ id, type: "section", name, children });
+      const boardNode = (id, name, children) => ({ id, type: "surface", name, children });
+      let mapTreeData = [
+        boardNode("s-basic", "APP基本数据看板", [
+          sectionNode("sec-active", "用户活跃", [
+            probeNode("p-first-bind", "getFirstBindData()", "GET", "/device/board/sku/first-bind", "c2"),
+            probeNode("p-active", "getActiveDevices()", "GET", "/device/board/active", "c1")
+          ]),
+          sectionNode("sec-sku", "SKU统计", [
+            probeNode("p-sku", "getSkuSummary()", "GET", "/device/board/sku/summary", "c3")
+          ])
+        ]),
+        boardNode("s-usage", "APP功能使用看板", [
+          sectionNode("sec-funnel", "功能分析", [
+            probeNode("p-funnel", "getFeatureFunnel()", "GET", "/bi/feature/funnel", "c1")
+          ]),
+          sectionNode("sec-dau", "活跃趋势", [
+            probeNode("p-dau", "getDau()", "GET", "/bi/dau", "c2")
+          ])
+        ]),
+        boardNode("s-ops", "运营看板", [
+          sectionNode("sec-trade", "交易概览", [
+            probeNode("p-gmv", "getGmv()", "GET", "/ops/gmv", "c3"),
+            probeNode("p-orders", "getOrders()", "GET", "/ops/orders", "c1")
+          ])
+        ]),
+        boardNode("s-warn", "预警看板", [
+          sectionNode("sec-warn", "预警列表", [
+            probeNode("p-warn", "listWarnings()", "GET", "/alert/list", "c1")
+          ])
+        ]),
+        boardNode("s-pad", "PAD看板", [
+          sectionNode("sec-pad", "首页", [
+            probeNode("p-pad", "getPadHome()", "GET", "/pad/home", "c1")
+          ])
+        ]),
+        boardNode("s-pc", "PC看板", [
+          sectionNode("sec-pc-home", "首页", [
+            probeNode("p-pc-home", "getPcHome()", "GET", "/pc/home", "c1")
+          ]),
+          sectionNode("sec-pc-dev", "设备", [
+            probeNode("p-pc-dev", "getPcDevices()", "GET", "/pc/devices", "c2")
+          ])
+        ]),
+        boardNode("s-light", "灯效看板", [
+          sectionNode("sec-light-use", "使用情况", [
+            probeNode("p-light", "getLightEffect()", "GET", "/light/effect", "c1")
+          ]),
+          sectionNode("sec-light-scene", "场景", [
+            probeNode("p-scene", "getLightScene()", "GET", "/light/scene", "c2")
+          ])
+        ])
+      ];
+
+      let qmSurfaceId = null;
+      let qmDrillFilter = "all";
+      let selectedId = "s-basic";
+      const expanded = new Set(["s-basic", "sec-active", "sec-sku"]);
+      let editingChain = null;
+      let qmStepDraft = [];
+
+      const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[c]));
+      const uid = () => `id_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+      const formatSteps = (steps) => (steps || []).join(" → ") || "（空链）";
+      const buildHow = (steps) => `定时打接口 → 门闩 → ${formatSteps(steps)} → 任一失败记异常(0)，全过健康(100)`;
+      const opById = (id) => operators.find((o) => o.id === id);
+
+      function walkNodes(nodes, fn) {
+        (nodes || []).forEach((n) => {
+          fn(n);
+          if (n.children) walkNodes(n.children, fn);
+        });
+      }
+      function findNode(nodes, id, parent = null) {
+        for (const n of nodes || []) {
+          if (n.id === id) return { node: n, parent };
+          const hit = findNode(n.children, id, n);
+          if (hit) return hit;
+        }
+        return null;
+      }
+      function mapTree(nodes, mapper) {
+        return (nodes || []).map((n) => {
+          const next = mapper({ ...n });
+          const src = Object.prototype.hasOwnProperty.call(next, "children") ? next.children : n.children;
+          if (src && src.length) next.children = mapTree(src, mapper);
+          else if (src) next.children = src;
+          return next;
+        });
+      }
+      function filterTree(nodes, pred) {
+        return (nodes || []).reduce((acc, n) => {
+          if (!pred(n)) return acc;
+          acc.push({ ...n, children: filterTree(n.children, pred) });
+          return acc;
+        }, []);
+      }
+      function collectProbes(nodes) {
+        const out = [];
+        walkNodes(nodes, (n) => { if (n.type === "probe") out.push(n); });
+        return out;
+      }
+      function surfaceAgg(s) {
+        const n = s.probes.length;
+        const bad = s.probes.filter((p) => p.severity !== "healthy").length;
+        const healthy = n - bad;
+        const dqi = n ? (healthy / n) * 100 : 0;
+        const worst = s.probes.reduce((w, p) => (RANK[p.severity] > RANK[w] ? p.severity : w), "healthy");
+        return { dqi, worst, bad, n };
+      }
+      function globalStats() {
+        const leaves = SURFACES.flatMap((s) => s.probes);
+        const n = leaves.length;
+        const healthy = leaves.filter((p) => p.severity === "healthy").length;
+        const abnormal = leaves.filter((p) => p.severity === "abnormal").length;
+        return {
+          n,
+          healthy,
+          abnormal,
+          healthRate: n ? (healthy / n) * 100 : null
+        };
+      }
+      function switchQmTab(key) {
+        document.querySelectorAll("#page-quality [data-qm-tab]").forEach((el) => {
+          el.classList.toggle("active", el.dataset.qmTab === key);
+        });
+        document.querySelectorAll("#page-quality > .panel-card > .tab-panel").forEach((el) => {
+          el.classList.toggle("active", el.id === "qm-panel-" + key);
+        });
+      }
+
+      function renderOverview() {
+        const root = document.getElementById("qm-panel-overview");
+        if (!root) return;
+        if (qmSurfaceId) {
+          const s = SURFACES.find((x) => x.id === qmSurfaceId);
+          if (!s) { qmSurfaceId = null; }
+          else {
+            const abnormalN = s.probes.filter((p) => p.severity === "abnormal").length;
+            const healthyN = s.probes.filter((p) => p.severity === "healthy").length;
+            const rows = s.probes.filter((p) => qmDrillFilter === "all" || p.severity === qmDrillFilter);
+            const pill = (key, label) => `<button type="button" class="range-pill${qmDrillFilter === key ? " active" : ""}" data-qm-drill="${key}">${label}</button>`;
+            root.innerHTML = `
+              <div class="panel-body">
+                <div class="toolbar">
+                  <div class="qm-crumb">
+                    <button type="button" class="qm-back-link" data-qm-back>总览</button>
+                    <span style="color:var(--text-disabled)">/</span>
+                    <span>${esc(s.name)}</span>
+                  </div>
+                  <button type="button" class="btn" data-qm-back>返回</button>
+                </div>
+                <div class="qm-pills">
+                  ${pill("all", `全部 (${s.probes.length})`)}
+                  ${pill("abnormal", `异常 (${abnormalN})`)}
+                  ${pill("healthy", `健康 (${healthyN})`)}
+                </div>
+                <div class="table-wrap">
+                  <table class="data-table qm-table">
+                    <thead>
+                      <tr>
+                        <th style="width:120px">区块</th>
+                        <th style="width:180px">接口名称</th>
+                        <th>接口功能描述</th>
+                        <th>方法 / 后端路径</th>
+                        <th>所属微服务</th>
+                        <th class="num">耗时</th>
+                        <th class="num">健康分</th>
+                        <th>数据合理性质检结论</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${rows.map((p) => `
+                        <tr>
+                          <td>${esc(p.section || "—")}</td>
+                          <td><span class="qm-path">${esc(p.fn)}</span></td>
+                          <td>${esc(p.title)}</td>
+                          <td><span class="tag tag-preset">${esc(p.method)}</span> <span class="qm-path">{${esc(p.url || "url")}}${esc(p.path)}</span></td>
+                          <td>${esc(p.svc)}</td>
+                          <td class="num${p.rt >= 300 ? " qm-rt-warn" : ""}">${p.rt} ms</td>
+                          <td class="num ${p.score === 100 ? "qm-score-ok" : "qm-score-bad"}">${p.score}</td>
+                          <td>${p.severity === "healthy"
+                            ? `<span class="qm-ok">✓ ${esc(p.conclusion)}</span>`
+                            : `<span class="qm-bad">! ${esc(p.conclusion)}</span>`}</td>
+                        </tr>`).join("")}
+                    </tbody>
+                  </table>
+                </div>
+              </div>`;
+            return;
+          }
+        }
+
+        const g = globalStats();
+        const healthText = g.healthRate == null ? "—" : g.healthRate.toFixed(1);
+        const kpi = (cls, body) => `<div class="kpi-card ${cls}">${body}</div>`;
+        const card = (s) => {
+          const a = surfaceAgg(s);
+          const iface = a.bad ? `${a.bad} 异常/ ${a.n} 接口` : `${a.n}接口`;
+          return `<button type="button" class="qm-surface ${a.worst}" data-qm-open="${esc(s.id)}">
+            <div class="qm-surface-head">
+              <span class="qm-surface-name">${esc(s.name)}</span>
+              <span class="tag ${SEV_TAG[a.worst]}">${SEV_LABEL[a.worst]}</span>
+            </div>
+            <div class="qm-surface-foot">
+              <span class="qm-dqi">${a.dqi.toFixed(1)}%</span>
+              <span class="qm-iface">${iface}</span>
+            </div>
+          </button>`;
+        };
+        root.innerHTML = `
+          <div class="qm-overview">
+            <div class="kpi-row cols-3">
+              ${kpi("", `<div class="label">健康度（API）</div><div class="value" style="color:var(--success)">${healthText}<span class="suffix">%</span></div>`)}
+              ${kpi("is-abnormal", `<div class="label">异常接口数</div><div class="value">${g.abnormal}</div>`)}
+              ${kpi("is-healthy", `<div class="label">健康接口数</div><div class="value">${g.healthy}</div>`)}
+            </div>
+            <div class="qm-boards">
+              <div class="section-title">业务看板</div>
+              <div class="qm-grid">${SURFACES.map(card).join("")}</div>
+            </div>
+          </div>`;
+      }
+
+      function renderTree(nodes) {
+        return `<ul class="qm-tree">${(nodes || []).map((n) => {
+          const meta = NODE_META[n.type];
+          const kids = n.children || [];
+          const open = expanded.has(n.id);
+          const probeCount = n.type === "probe" ? 0 : collectProbes([n]).length;
+          const caret = kids.length
+            ? `<button type="button" class="qm-caret" data-qm-expand="${esc(n.id)}" aria-label="${open ? "收起" : "展开"}">${open ? "▾" : "▸"}</button>`
+            : `<span class="qm-caret"></span>`;
+          const off = n.type === "probe" && n.status === "禁用" ? `<span class="tag tag-custom">禁用</span>` : "";
+          const count = probeCount > 0 ? `<span class="qm-node-count">${probeCount} 接口</span>` : "";
+          const sub = kids.length && open ? renderTree(kids) : "";
+          return `<li>
+            <div class="qm-node${n.id === selectedId ? " is-on" : ""}" data-qm-select="${esc(n.id)}">
+              ${caret}${`<span class="tag ${meta.tag}">${meta.label}</span>`}
+              <span class="qm-node-name">${esc(n.name)}</span>${off}${count}
+            </div>${sub}
+          </li>`;
+        }).join("")}</ul>`;
+      }
+
+      function chainIdsOf(node) {
+        if (!node) return [];
+        if (Array.isArray(node.chainIds) && node.chainIds.length) return node.chainIds.slice();
+        return node.chainId ? [node.chainId] : [];
+      }
+      function chainChip(id) {
+        const c = chains.find((x) => x.id === id);
+        return `<span class="qm-chip" data-chain="${esc(id)}">${esc(c ? c.name : id)}<button type="button" class="qm-chip-x" data-qm-unchain="${esc(id)}" aria-label="移除">×</button></span>`;
+      }
+      function chainPickOptions(selected) {
+        const rest = chains.filter((c) => !selected.includes(c.id));
+        const options = rest.map((c) => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join("");
+        if (rest.length) return `<option value="" selected hidden></option>` + options;
+        return `<option value="" selected>请选择</option>`;
+      }
+      function chainFieldHtml(tagsId, pickId, ids) {
+        return `<div class="qm-tag-field">
+          <div class="qm-tag-field-tags" id="${tagsId}">${ids.map(chainChip).join("")}</div>
+          <select class="qm-tag-field-pick" id="${pickId}" aria-label="选择算子链">${chainPickOptions(ids)}</select>
+        </div>`;
+      }
+      function readChainField(tagsId) {
+        const tags = document.getElementById(tagsId);
+        if (!tags) return [];
+        return [...tags.querySelectorAll("[data-chain]")].map((el) => el.getAttribute("data-chain"));
+      }
+      function paintChainField(tagsId, pickId, ids) {
+        const tags = document.getElementById(tagsId);
+        const pick = document.getElementById(pickId);
+        if (!tags || !pick) return;
+        tags.innerHTML = ids.map(chainChip).join("");
+        pick.innerHTML = chainPickOptions(ids);
+      }
+      function renderMapping() {
+        const root = document.getElementById("qm-panel-mapping");
+        if (!root) return;
+        const hit = findNode(mapTreeData, selectedId);
+        const selected = hit && hit.node;
+        let detail = `<div class="qm-empty">选中左侧节点查看，或使用上方按钮新建</div>`;
+        if (selected) {
+          const nameLabel = selected.type === "probe" ? "接口名称" : selected.type === "section" ? "区块名称" : "名称";
+          const probeFields = selected.type === "probe" ? `
+            <div class="form-item">
+              <label><span class="req">*</span>方法</label>
+              <select class="select" id="qmNodeMethod">
+                <option value="GET"${selected.method === "GET" ? " selected" : ""}>GET</option>
+                <option value="POST"${selected.method === "POST" ? " selected" : ""}>POST</option>
+              </select>
+            </div>
+            <div class="form-item" id="qmNodePathItem">
+              <label><span class="req">*</span>路径</label>
+              <div class="qm-path-row">
+                <span class="qm-brace">{</span>
+                <input class="input qm-url-input" id="qmNodeUrl" value="${esc(selected.url || "url")}" aria-label="路径变量" />
+                <span class="qm-brace">}</span>
+                <input class="input qm-path-input" id="qmNodePath" value="${esc(selected.path || "")}" placeholder="/api/..." />
+              </div>
+              <div class="error-text">路径不能为空</div>
+            </div>
+            <div class="form-item" id="qmNodeChainItem">
+              <label><span class="req">*</span>算子链</label>
+              ${chainFieldHtml("qmNodeChainTags", "qmNodeChainPick", chainIdsOf(selected))}
+              <div class="error-text">请选择算子链</div>
+            </div>
+            <div class="form-item" id="qmNodeRelationItem">
+              <label><span class="req">*</span>映射关系</label>
+              <input class="input" id="qmNodeRelation" value="${esc(selected.relation || "")}" placeholder="请输入映射关系" />
+              <div class="error-text">映射关系不能为空</div>
+            </div>
+            <div class="form-item">
+              <label><span class="req">*</span>状态</label>
+              <select class="select" id="qmNodeStatus">
+                <option value="启用"${selected.status !== "禁用" ? " selected" : ""}>启用</option>
+                <option value="禁用"${selected.status === "禁用" ? " selected" : ""}>禁用</option>
+              </select>
+            </div>` : "";
+          detail = `
+            <div class="qm-form">
+              <div class="form-item" id="qmNodeNameItem">
+                <label><span class="req">*</span>${nameLabel}</label>
+                <input class="input" id="qmNodeName" value="${esc(selected.name)}" />
+                <div class="error-text">${nameLabel}不能为空</div>
+              </div>
+              ${probeFields}
+            </div>
+            <div class="qm-actions">
+              <button type="button" class="btn btn-primary" data-qm-save>保存</button>
+              <button type="button" class="btn-danger-text" data-qm-remove>删除</button>
+            </div>`;
+        }
+        root.innerHTML = `
+          <div class="qm-bar">
+            <button type="button" class="btn" data-qm-new-board>新建业务看板</button>
+            <button type="button" class="btn" data-qm-new-section>新建区块</button>
+            <button type="button" class="btn btn-primary" data-qm-new-probe>新建接口</button>
+          </div>
+          <div class="qm-map">
+            <div class="qm-tree-pane">
+              <div class="qm-tree-head"><span>映射树</span></div>
+              ${mapTreeData.length ? renderTree(mapTreeData) : `<div class="qm-empty">暂无业务看板</div>`}
+            </div>
+            <div class="qm-detail-pane">${detail}</div>
+          </div>`;
+      }
+
+      function renderChains() {
+        const root = document.getElementById("qm-panel-chains");
+        if (!root) return;
+        const chainable = operators.filter((o) => o.chainable);
+        const rows = chains.map((row) => {
+          const tags = (row.steps || []).map((sid, i) => {
+            const o = opById(sid);
+            return `<span class="tag tag-preset">${esc(o ? o.name : sid)}</span>`;
+          }).join(" ");
+          const mounted = collectProbes(mapTreeData).filter((m) => chainIdsOf(m).includes(row.id)).length;
+          const mountCell = mounted
+            ? `<button type="button" class="btn-link" data-qm-goto="mapping">${mounted} 个接口</button>`
+            : `<span style="color:var(--text-helper)">0</span>`;
+          return `<tr>
+            <td>${esc(row.name)}</td>
+            <td>${esc(modelName(row.modelType))}</td>
+            <td><div class="qm-step-tags">${tags}</div></td>
+            <td>${mountCell}</td>
+            <td class="qm-note">${esc(buildHow(row.steps))}</td>
+            <td class="col-actions">
+              <button type="button" class="btn-link" data-qm-chain-edit="${esc(row.id)}">编辑</button>
+              <button type="button" class="btn-danger-text" data-qm-chain-del="${esc(row.id)}">删除</button>
+            </td>
+          </tr>`;
+        }).join("");
+        root.innerHTML = `
+          <div class="panel-body">
+            <div class="toolbar">
+              <div class="toolbar-left"></div>
+              <div class="toolbar-right">
+                <button type="button" class="btn btn-primary" data-qm-chain-new ${chainable.length ? "" : "disabled"}>新建算子链</button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table qm-table">
+                <thead>
+                  <tr>
+                    <th style="width:140px">算子链名称</th>
+                    <th style="width:140px">模型类型</th>
+                    <th>算子插件</th>
+                    <th style="width:110px">被挂载</th>
+                    <th>检测说明</th>
+                    <th class="col-actions" style="width:120px">操作</th>
+                  </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </div>
+          </div>`;
+      }
+
+      function renderOperators() {
+        const root = document.getElementById("qm-panel-operators");
+        if (!root) return;
+        const rows = operators.map((o) => `<tr>
+          <td><span class="qm-path">${esc(o.id)}</span></td>
+          <td>${esc(o.name)}</td>
+          <td>${esc(o.semantics)}</td>
+        </tr>`).join("");
+        root.innerHTML = `
+          <div class="panel-body">
+            <div class="toolbar">
+              <div class="toolbar-left"></div>
+              <div class="toolbar-right">
+                <button type="button" class="btn" data-qm-op-new>Mock 登记插件</button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table qm-table">
+                <thead>
+                  <tr>
+                    <th style="width:180px">operatorId</th>
+                    <th style="width:140px">名称</th>
+                    <th>判定语义</th>
+                  </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </div>
+          </div>`;
+      }
+
+      function patchSelected(patch) {
+        mapTreeData = mapTree(mapTreeData, (n) => (n.id === selectedId ? { ...n, ...patch } : n));
+      }
+      function saveDetail() {
+        const hit = findNode(mapTreeData, selectedId);
+        if (!hit) return;
+        const selected = hit.node;
+        const nameEl = document.getElementById("qmNodeName");
+        const name = nameEl.value.trim();
+        nameEl.closest(".form-item").classList.toggle("has-error", !name);
+        if (!name) return;
+        if (selected.type === "probe") {
+          const pathEl = document.getElementById("qmNodePath");
+          const path = pathEl.value.trim();
+          const chainIds = readChainField("qmNodeChainTags");
+          const relationEl = document.getElementById("qmNodeRelation");
+          const relation = relationEl.value.trim();
+          pathEl.closest(".form-item").classList.toggle("has-error", !path);
+          document.getElementById("qmNodeChainItem").classList.toggle("has-error", !chainIds.length);
+          document.getElementById("qmNodeRelationItem").classList.toggle("has-error", !relation);
+          if (!path || !chainIds.length || !relation) return;
+          patchSelected({
+            name,
+            method: document.getElementById("qmNodeMethod").value,
+            url: document.getElementById("qmNodeUrl").value.trim() || "url",
+            path,
+            status: document.getElementById("qmNodeStatus").value || "启用",
+            chainIds,
+            relation
+          });
+        } else {
+          patchSelected({ name });
+        }
+        toast("已更新节点");
+        renderMapping();
+        renderChains();
+      }
+      function boardOptions(sel) {
+        sel.innerHTML = `<option value="">请选择</option>` + mapTreeData.filter((n) => n.type === "surface").map((b) => `<option value="${esc(b.id)}">${esc(b.name)}</option>`).join("");
+      }
+      function sectionsOf(boardId) {
+        const board = mapTreeData.find((n) => n.id === boardId);
+        return ((board && board.children) || []).filter((n) => n.type === "section");
+      }
+      function appendChild(parentId, child) {
+        mapTreeData = mapTree(mapTreeData, (n) => {
+          if (n.id !== parentId) return n;
+          return { ...n, children: [...(n.children || []), child] };
+        });
+        expanded.add(parentId);
+        selectedId = child.id;
+      }
+      function openBoard() {
+        document.getElementById("qmBoardName").value = "";
+        document.getElementById("qmBoardNameItem").classList.remove("has-error");
+        document.getElementById("qmBoardMask").classList.add("open");
+      }
+      function saveBoard() {
+        const name = document.getElementById("qmBoardName").value.trim();
+        document.getElementById("qmBoardNameItem").classList.toggle("has-error", !name);
+        if (!name) return;
+        const node = { id: uid(), type: "surface", name, children: [] };
+        mapTreeData = mapTreeData.concat([node]);
+        expanded.add(node.id);
+        selectedId = node.id;
+        document.getElementById("qmBoardMask").classList.remove("open");
+        toast("已创建业务看板");
+        renderMapping();
+      }
+      function openSection() {
+        boardOptions(document.getElementById("qmSecBoard"));
+        document.getElementById("qmSecName").value = "";
+        document.getElementById("qmSecBoardItem").classList.remove("has-error");
+        document.getElementById("qmSecNameItem").classList.remove("has-error");
+        document.getElementById("qmSecMask").classList.add("open");
+      }
+      function saveSection() {
+        const boardId = document.getElementById("qmSecBoard").value;
+        const name = document.getElementById("qmSecName").value.trim();
+        document.getElementById("qmSecBoardItem").classList.toggle("has-error", !boardId);
+        document.getElementById("qmSecNameItem").classList.toggle("has-error", !name);
+        if (!boardId || !name) return;
+        appendChild(boardId, { id: uid(), type: "section", name, children: [] });
+        document.getElementById("qmSecMask").classList.remove("open");
+        toast("已创建区块");
+        renderMapping();
+      }
+      function openProbe() {
+        boardOptions(document.getElementById("qmProbeBoard"));
+        document.getElementById("qmProbeSec").innerHTML = `<option value="">请选择</option>`;
+        document.getElementById("qmProbeSecItem").classList.add("is-hidden");
+        document.getElementById("qmProbeName").value = "";
+        document.getElementById("qmProbeMethod").value = "GET";
+        document.getElementById("qmProbeUrl").value = "url";
+        document.getElementById("qmProbePath").value = "";
+        paintChainField("qmProbeChainTags", "qmProbeChainPick", []);
+        document.getElementById("qmProbeRelation").value = "";
+        document.getElementById("qmProbeStatus").value = "启用";
+        ["qmProbeBoardItem", "qmProbeSecItem", "qmProbeNameItem", "qmProbePathItem", "qmProbeChainItem", "qmProbeRelationItem"].forEach((id) => {
+          document.getElementById(id).classList.remove("has-error");
+        });
+        document.getElementById("qmProbeMask").classList.add("open");
+      }
+      function onProbeBoard() {
+        const boardId = document.getElementById("qmProbeBoard").value;
+        const item = document.getElementById("qmProbeSecItem");
+        const sel = document.getElementById("qmProbeSec");
+        if (!boardId) {
+          item.classList.add("is-hidden");
+          sel.innerHTML = `<option value="">请选择</option>`;
+          return;
+        }
+        const secs = sectionsOf(boardId);
+        sel.innerHTML = `<option value="">请选择</option>` + secs.map((s) => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join("");
+        item.classList.remove("is-hidden");
+      }
+      function saveProbe() {
+        const boardId = document.getElementById("qmProbeBoard").value;
+        const sectionId = document.getElementById("qmProbeSec").value;
+        const name = document.getElementById("qmProbeName").value.trim();
+        const path = document.getElementById("qmProbePath").value.trim();
+        const chainIds = readChainField("qmProbeChainTags");
+        const relation = document.getElementById("qmProbeRelation").value.trim();
+        document.getElementById("qmProbeBoardItem").classList.toggle("has-error", !boardId);
+        document.getElementById("qmProbeSecItem").classList.toggle("has-error", !!boardId && !sectionId);
+        document.getElementById("qmProbeNameItem").classList.toggle("has-error", !name);
+        document.getElementById("qmProbePathItem").classList.toggle("has-error", !path);
+        document.getElementById("qmProbeChainItem").classList.toggle("has-error", !chainIds.length);
+        document.getElementById("qmProbeRelationItem").classList.toggle("has-error", !relation);
+        if (!boardId || !sectionId || !name || !path || !chainIds.length || !relation) return;
+        expanded.add(boardId);
+        appendChild(sectionId, {
+          id: uid(),
+          type: "probe",
+          name,
+          method: document.getElementById("qmProbeMethod").value,
+          url: document.getElementById("qmProbeUrl").value.trim() || "url",
+          path,
+          status: document.getElementById("qmProbeStatus").value || "启用",
+          chainIds,
+          relation
+        });
+        document.getElementById("qmProbeMask").classList.remove("open");
+        toast("已创建接口");
+        renderMapping();
+        renderChains();
+      }
+      function askConfirm(title, body, onOk) {
+        document.getElementById("qmConfirmTitle").textContent = title;
+        document.getElementById("qmConfirmBody").textContent = body;
+        document.getElementById("qmConfirmMask").classList.add("open");
+        document.getElementById("qmConfirmOk").onclick = () => {
+          document.getElementById("qmConfirmMask").classList.remove("open");
+          onOk();
+        };
+      }
+      function removeSelected() {
+        const hit = findNode(mapTreeData, selectedId);
+        if (!hit) return;
+        const selected = hit.node;
+        const body = selected.type === "surface"
+          ? "确认是否删除业务看板，删除后同时会删除看板下的区块和接口？"
+          : selected.type === "section"
+            ? "确认是否删除区块，删除后同时会删除区块下的接口？"
+            : "确认是否删除该接口？";
+        askConfirm("确认删除", body, () => {
+          mapTreeData = filterTree(mapTreeData, (n) => n.id !== selected.id);
+          selectedId = null;
+          toast("已删除");
+          renderMapping();
+          renderChains();
+        });
+      }
+      function renderStepOrder() {
+        const el = document.getElementById("qmChainOrder");
+        if (!el) return;
+        const names = qmStepDraft.map((id) => {
+          const o = opById(id);
+          return o ? o.name : id;
+        });
+        el.textContent = names.length
+          ? `已选 ${names.length} 个：${names.join(" → ")}`
+          : "可多选，按勾选顺序组成算子链";
+      }
+      function renderChainPlugins() {
+        const model = document.getElementById("qmChainModel").value;
+        const item = document.getElementById("qmChainStepsItem");
+        const box = document.getElementById("qmChainSteps");
+        if (!model) {
+          item.classList.add("is-hidden");
+          box.innerHTML = "";
+          renderStepOrder();
+          return;
+        }
+        item.classList.remove("is-hidden");
+        const list = operators.filter((o) => o.chainable && o.modelType === model);
+        box.innerHTML = list.length
+          ? list.map((o) => `<label><input type="checkbox" value="${esc(o.id)}"${qmStepDraft.includes(o.id) ? " checked" : ""} /> ${esc(o.name)}</label>`).join("")
+          : `<span class="hint">该模型类型下暂无算子插件</span>`;
+        renderStepOrder();
+      }
+      function openChain(row) {
+        editingChain = row;
+        document.getElementById("qmChainTitle").textContent = row ? "编辑算子链" : "新建算子链";
+        document.getElementById("qmChainName").value = row ? row.name : "";
+        document.getElementById("qmChainModel").value = row ? (row.modelType || "") : "";
+        document.getElementById("qmChainNameItem").classList.remove("has-error");
+        document.getElementById("qmChainModelItem").classList.remove("has-error");
+        document.getElementById("qmChainStepsItem").classList.remove("has-error");
+        qmStepDraft = row ? (row.steps || []).slice() : [];
+        renderChainPlugins();
+        document.getElementById("qmChainMask").classList.add("open");
+      }
+      function saveChain() {
+        const name = document.getElementById("qmChainName").value.trim();
+        const modelType = document.getElementById("qmChainModel").value;
+        const nameItem = document.getElementById("qmChainNameItem");
+        const modelItem = document.getElementById("qmChainModelItem");
+        const stepItem = document.getElementById("qmChainStepsItem");
+        nameItem.classList.toggle("has-error", !name);
+        modelItem.classList.toggle("has-error", !modelType);
+        stepItem.classList.toggle("has-error", !qmStepDraft.length);
+        if (!name || !modelType || !qmStepDraft.length) return;
+        const bad = qmStepDraft.find((sid) => {
+          const o = opById(sid);
+          return !o || !o.chainable || o.modelType !== modelType;
+        });
+        if (bad) {
+          toast(`步骤含当前模型类型之外的插件：${bad}`, "error");
+          return;
+        }
+        const steps = qmStepDraft.slice();
+        if (editingChain) {
+          chains = chains.map((c) => (c.id === editingChain.id ? { ...c, name, modelType, steps } : c));
+        } else {
+          chains = chains.concat([{ id: uid(), name, modelType, steps }]);
+        }
+        toast("已保存算子链");
+        document.getElementById("qmChainMask").classList.remove("open");
+        renderChains();
+        renderMapping();
+      }
+      function removeChain(id) {
+        const used = collectProbes(mapTreeData).filter((m) => chainIdsOf(m).includes(id));
+        if (used.length) {
+          toast(`仍有 ${used.length} 个接口挂载此链，请先改挂载`, "error");
+          return;
+        }
+        askConfirm("确认删除", "确认删除该算子链？", () => {
+          chains = chains.filter((c) => c.id !== id);
+          toast("已删除算子链");
+          renderChains();
+          renderMapping();
+        });
+      }
+      function openOperator() {
+        document.getElementById("qmOpId").value = "";
+        document.getElementById("qmOpName").value = "";
+        document.getElementById("qmOpModel").value = "";
+        document.getElementById("qmOpSemantics").value = "";
+        document.getElementById("qmOpIdItem").classList.remove("has-error");
+        document.getElementById("qmOpNameItem").classList.remove("has-error");
+        document.getElementById("qmOpModelItem").classList.remove("has-error");
+        document.getElementById("qmOpMask").classList.add("open");
+      }
+      function saveOperator() {
+        const id = document.getElementById("qmOpId").value.trim();
+        const name = document.getElementById("qmOpName").value.trim();
+        const modelType = document.getElementById("qmOpModel").value;
+        const semantics = document.getElementById("qmOpSemantics").value.trim();
+        document.getElementById("qmOpIdItem").classList.toggle("has-error", !id);
+        document.getElementById("qmOpNameItem").classList.toggle("has-error", !name);
+        document.getElementById("qmOpModelItem").classList.toggle("has-error", !modelType);
+        if (!id || !name || !modelType) return;
+        if (operators.some((o) => o.id === id)) {
+          document.getElementById("qmOpIdItem").classList.add("has-error");
+          toast("operatorId 已存在", "error");
+          return;
+        }
+        operators = operators.concat([{
+          id,
+          name,
+          kind: "业务插件",
+          chainable: true,
+          modelType,
+          semantics: semantics || "（Mock 登记，真实需 Java 发版）"
+        }]);
+        toast("已 Mock 登记到注册表（原型）");
+        document.getElementById("qmOpMask").classList.remove("open");
+        renderOperators();
+        renderChains();
+      }
+
+      document.getElementById("page-quality").addEventListener("click", (e) => {
+        const tab = e.target.closest("[data-qm-tab]");
+        if (tab) { switchQmTab(tab.dataset.qmTab); return; }
+        if (e.target.closest("[data-qm-back]")) { qmSurfaceId = null; renderOverview(); return; }
+        const drill = e.target.closest("[data-qm-drill]");
+        if (drill) { qmDrillFilter = drill.dataset.qmDrill; renderOverview(); return; }
+        const opened = e.target.closest("[data-qm-open]");
+        if (opened) {
+          qmSurfaceId = opened.dataset.qmOpen;
+          qmDrillFilter = "all";
+          renderOverview();
+          return;
+        }
+        const expand = e.target.closest("[data-qm-expand]");
+        if (expand) {
+          const id = expand.dataset.qmExpand;
+          if (expanded.has(id)) expanded.delete(id); else expanded.add(id);
+          renderMapping();
+          return;
+        }
+        const sel = e.target.closest("[data-qm-select]");
+        if (sel) { selectedId = sel.dataset.qmSelect; renderMapping(); return; }
+        if (e.target.closest("[data-qm-new-board]")) { openBoard(); return; }
+        if (e.target.closest("[data-qm-new-section]")) { openSection(); return; }
+        if (e.target.closest("[data-qm-new-probe]")) { openProbe(); return; }
+        if (e.target.closest("[data-qm-save]")) { saveDetail(); return; }
+        if (e.target.closest("[data-qm-remove]")) { removeSelected(); return; }
+        if (e.target.closest("[data-qm-chain-new]")) { openChain(null); return; }
+        const edit = e.target.closest("[data-qm-chain-edit]");
+        if (edit) { openChain(chains.find((c) => c.id === edit.dataset.qmChainEdit) || null); return; }
+        const del = e.target.closest("[data-qm-chain-del]");
+        if (del) { removeChain(del.dataset.qmChainDel); return; }
+        if (e.target.closest("[data-qm-op-new]")) { openOperator(); return; }
+        const gotoTab = e.target.closest("[data-qm-goto]");
+        if (gotoTab) { switchQmTab(gotoTab.dataset.qmGoto); return; }
+      });
+      document.addEventListener("change", (e) => {
+        if (!e.target.classList || !e.target.classList.contains("qm-tag-field-pick") || !e.target.value) return;
+        const pick = e.target;
+        const field = pick.closest(".qm-tag-field");
+        const tags = field.querySelector(".qm-tag-field-tags");
+        const ids = [...tags.querySelectorAll("[data-chain]")].map((el) => el.getAttribute("data-chain"));
+        if (!ids.includes(pick.value)) ids.push(pick.value);
+        tags.innerHTML = ids.map(chainChip).join("");
+        pick.innerHTML = chainPickOptions(ids);
+        const item = field.closest(".form-item");
+        if (item) item.classList.remove("has-error");
+      });
+      document.addEventListener("click", (e) => {
+        const btn = e.target.closest && e.target.closest("[data-qm-unchain]");
+        if (!btn) return;
+        const field = btn.closest(".qm-tag-field");
+        if (!field) return;
+        const tags = field.querySelector(".qm-tag-field-tags");
+        const pick = field.querySelector(".qm-tag-field-pick");
+        const id = btn.getAttribute("data-qm-unchain");
+        const ids = [...tags.querySelectorAll("[data-chain]")].map((el) => el.getAttribute("data-chain")).filter((x) => x !== id);
+        tags.innerHTML = ids.map(chainChip).join("");
+        pick.innerHTML = chainPickOptions(ids);
+      });
+      ["qmChainModel", "qmOpModel"].forEach((id) => {
+        const sel = document.getElementById(id);
+        sel.innerHTML = `<option value="">请选择</option>` + MODEL_TYPES.map((m) => `<option value="${esc(m.id)}">${esc(m.name)}</option>`).join("");
+      });
+      document.getElementById("qmChainModel").addEventListener("change", () => {
+        qmStepDraft = [];
+        document.getElementById("qmChainModelItem").classList.remove("has-error");
+        document.getElementById("qmChainStepsItem").classList.remove("has-error");
+        renderChainPlugins();
+      });
+      document.getElementById("qmChainSteps").addEventListener("change", (e) => {
+        const input = e.target.closest("input[type=checkbox]");
+        if (!input) return;
+        if (input.checked) {
+          if (!qmStepDraft.includes(input.value)) qmStepDraft.push(input.value);
+        } else {
+          qmStepDraft = qmStepDraft.filter((id) => id !== input.value);
+        }
+        renderStepOrder();
+      });
+      document.getElementById("qmBoardSave").addEventListener("click", saveBoard);
+      document.getElementById("qmSecSave").addEventListener("click", saveSection);
+      document.getElementById("qmProbeSave").addEventListener("click", saveProbe);
+      document.getElementById("qmProbeBoard").addEventListener("change", onProbeBoard);
+      document.getElementById("qmChainSave").addEventListener("click", saveChain);
+      document.getElementById("qmOpSave").addEventListener("click", saveOperator);
+      document.getElementById("qmHelpBtn").addEventListener("click", () => {
+        document.getElementById("qmHelpMask").classList.add("open");
+      });
+
+      renderOverview();
+      renderMapping();
+      renderChains();
+      renderOperators();
+    })();
+
     const bootPage = normalizePage((location.hash || "").replace("#", ""));
     if (bootPage && PAGE_CRUMB[bootPage] && bootPage !== "faq") switchErpPage(bootPage);
   </script>
