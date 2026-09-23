@@ -700,43 +700,6 @@
     </div>
   </div>
 
-  <div class="mask" id="qmOpMask" role="dialog" aria-modal="true">
-    <div class="dialog" style="width:560px">
-      <div class="dialog-header">
-        <span>Mock 登记算子插件</span>
-        <button type="button" class="btn-icon" data-close="qmOpMask" aria-label="关闭">✕</button>
-      </div>
-      <div class="dialog-body">
-        <div class="form-item" id="qmOpIdItem">
-          <label><span class="req">*</span>operatorId</label>
-          <input class="input" id="qmOpId" placeholder="如 range_check" />
-          <div class="hint">真实环境由 Java 插件 class 注册，此处仅原型</div>
-          <div class="error-text">operatorId 不能为空</div>
-        </div>
-        <div class="form-item" id="qmOpNameItem">
-          <label><span class="req">*</span>名称</label>
-          <input class="input" id="qmOpName" />
-          <div class="error-text">名称不能为空</div>
-        </div>
-        <div class="form-item" id="qmOpModelItem">
-          <label><span class="req">*</span>模型类型</label>
-          <select class="select" id="qmOpModel">
-            <option value="">请选择</option>
-          </select>
-          <div class="error-text">请选择模型类型</div>
-        </div>
-        <div class="form-item">
-          <label>判定语义</label>
-          <textarea class="textarea" id="qmOpSemantics" rows="2" placeholder="失败条件简述" style="min-height:72px"></textarea>
-        </div>
-      </div>
-      <div class="dialog-footer">
-        <button type="button" class="btn" data-close="qmOpMask">取消</button>
-        <button type="button" class="btn btn-primary" id="qmOpSave">保存</button>
-      </div>
-    </div>
-  </div>
-
   <div class="mask" id="qmBoardMask" role="dialog" aria-modal="true">
     <div class="dialog" style="width:480px">
       <div class="dialog-header">
@@ -3921,12 +3884,6 @@
         </tr>`).join("");
         root.innerHTML = `
           <div class="panel-body">
-            <div class="toolbar">
-              <div class="toolbar-left"></div>
-              <div class="toolbar-right">
-                <button type="button" class="btn" data-qm-op-new>Mock 登记插件</button>
-              </div>
-            </div>
             <div class="table-wrap">
               <table class="data-table qm-table">
                 <thead>
@@ -4197,44 +4154,6 @@
           renderMapping();
         });
       }
-      function openOperator() {
-        document.getElementById("qmOpId").value = "";
-        document.getElementById("qmOpName").value = "";
-        document.getElementById("qmOpModel").value = "";
-        document.getElementById("qmOpSemantics").value = "";
-        document.getElementById("qmOpIdItem").classList.remove("has-error");
-        document.getElementById("qmOpNameItem").classList.remove("has-error");
-        document.getElementById("qmOpModelItem").classList.remove("has-error");
-        document.getElementById("qmOpMask").classList.add("open");
-      }
-      function saveOperator() {
-        const id = document.getElementById("qmOpId").value.trim();
-        const name = document.getElementById("qmOpName").value.trim();
-        const modelType = document.getElementById("qmOpModel").value;
-        const semantics = document.getElementById("qmOpSemantics").value.trim();
-        document.getElementById("qmOpIdItem").classList.toggle("has-error", !id);
-        document.getElementById("qmOpNameItem").classList.toggle("has-error", !name);
-        document.getElementById("qmOpModelItem").classList.toggle("has-error", !modelType);
-        if (!id || !name || !modelType) return;
-        if (operators.some((o) => o.id === id)) {
-          document.getElementById("qmOpIdItem").classList.add("has-error");
-          toast("operatorId 已存在", "error");
-          return;
-        }
-        operators = operators.concat([{
-          id,
-          name,
-          kind: "业务插件",
-          chainable: true,
-          modelType,
-          semantics: semantics || "（Mock 登记，真实需 Java 发版）"
-        }]);
-        toast("已 Mock 登记到注册表（原型）");
-        document.getElementById("qmOpMask").classList.remove("open");
-        renderOperators();
-        renderChains();
-      }
-
       document.getElementById("page-quality").addEventListener("click", (e) => {
         const tab = e.target.closest("[data-qm-tab]");
         if (tab) { switchQmTab(tab.dataset.qmTab); return; }
@@ -4267,7 +4186,6 @@
         if (edit) { openChain(chains.find((c) => c.id === edit.dataset.qmChainEdit) || null); return; }
         const del = e.target.closest("[data-qm-chain-del]");
         if (del) { removeChain(del.dataset.qmChainDel); return; }
-        if (e.target.closest("[data-qm-op-new]")) { openOperator(); return; }
         const gotoTab = e.target.closest("[data-qm-goto]");
         if (gotoTab) { switchQmTab(gotoTab.dataset.qmGoto); return; }
       });
@@ -4295,10 +4213,7 @@
         tags.innerHTML = ids.map(chainChip).join("");
         pick.innerHTML = chainPickOptions(ids);
       });
-      ["qmChainModel", "qmOpModel"].forEach((id) => {
-        const sel = document.getElementById(id);
-        sel.innerHTML = `<option value="">请选择</option>` + MODEL_TYPES.map((m) => `<option value="${esc(m.id)}">${esc(m.name)}</option>`).join("");
-      });
+      document.getElementById("qmChainModel").innerHTML = `<option value="">请选择</option>` + MODEL_TYPES.map((m) => `<option value="${esc(m.id)}">${esc(m.name)}</option>`).join("");
       document.getElementById("qmChainModel").addEventListener("change", () => {
         qmStepDraft = [];
         document.getElementById("qmChainModelItem").classList.remove("has-error");
@@ -4320,7 +4235,6 @@
       document.getElementById("qmProbeSave").addEventListener("click", saveProbe);
       document.getElementById("qmProbeBoard").addEventListener("change", onProbeBoard);
       document.getElementById("qmChainSave").addEventListener("click", saveChain);
-      document.getElementById("qmOpSave").addEventListener("click", saveOperator);
       document.getElementById("qmHelpBtn").addEventListener("click", () => {
         document.getElementById("qmHelpMask").classList.add("open");
       });
